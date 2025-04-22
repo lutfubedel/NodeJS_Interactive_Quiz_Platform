@@ -13,24 +13,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
-  const auth = getAuth();
-  const { currentUser, userData } = useAuth();
 
-  const handleAuthState = () => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          userData.nickName === "" ? navigate('/create_profile') : navigate('/home');
-        } catch (error) {
-          console.error("Nickname kontrol hatası:", error);
-        }
-      } else {
-        console.log("No user is signed in.");
-      }
-    });
-  };
-  
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -70,15 +53,6 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
-  
-    if (storedUser) {
-      navigate("/home");
-    }
-  }, [navigate]);
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen -100">

@@ -18,6 +18,7 @@ function App() {
         <Route path="/create_profile" element={<CreateProfile />} />
 
         <Route path="/home" element={<Home />} />
+        <Route path="/" element={<Home />} />
       </Routes>
     </Router>
   );
