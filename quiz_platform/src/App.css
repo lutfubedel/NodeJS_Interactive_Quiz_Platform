@@ -22,6 +22,7 @@
     width: 100vw;
   }
   
+  
 
   .icon {
     @apply relative flex items-center justify-center
@@ -65,7 +66,7 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0rem;
   text-align: center;
   
   /* --primary-bg: #89A8B2;
@@ -124,4 +125,9 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* AnimatedButtons.jsx  */
+.quiz-choose-button {
+  @apply bg-white text-blue-600 font-semibold py-3 px-8 rounded-xl shadow  transform hover:scale-105;
 }

@@ -1,6 +1,8 @@
 const { MongoClient } = require("mongodb")
 require("dotenv").config({path:"./config.env"})
 
+console.log("ATLAS_URI:", process.env.ATLAS_URI)
+
 async function main() {
     const db = process.env.ATLAS_URI
     const client = new MongoClient(db)
