@@ -1,32 +1,29 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import { handleResetPassword } from "../../firebase";
 const EmailVerification = () => {
-
-  const [email,setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const navigate = useNavigate();
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-        await handleResetPassword(email);
-        toast.success("Password reset link has been sent!");
+      await handleResetPassword(email);
+      toast.success("Password reset link has been sent!");
 
-        setTimeout(() => {
-            navigate("/login");
-        }, 3000);
-        
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     } catch (error) {
-        toast.error("Password reset failed:");
-        console.log(error);
+      toast.error("Password reset failed:");
+      console.log(error);
     }
   };
 
-
   return (
-    <div className="flex items-center justify-center min-h-screen -100">
+    <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-r from-blue-400 to-purple-600 text-white animation-bg-gradient-move">
       <div className="w-full max-w-md p-12 bg-white border border-gray-300 rounded-2xl shadow-md">
         <h2 className="mt-2 text-center text-2xl/5 font-bold tracking-tight text-gray-900">
           Email Verification
@@ -40,7 +37,7 @@ const EmailVerification = () => {
                   name="email"
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email Adress"
                   required
                   autoComplete="email"

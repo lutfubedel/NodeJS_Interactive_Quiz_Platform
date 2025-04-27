@@ -6,6 +6,7 @@ import EmailVerification from "./auth/emailVerification";
 import Terms from "./auth/terms";
 import CreateProfile from "./auth/createProfile";
 import Home from "./pages/Home";
+import JoinQuiz from "./pages/JoinQuiz";
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
         <Route path="/forgetPassword" element={<EmailVerification />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/create_profile" element={<CreateProfile />} />
-
+        <Route path="/joinquiz" element={<JoinQuiz />} />
         <Route path="/home" element={<Home />} />
         <Route path="/" element={<Home />} />
       </Routes>
