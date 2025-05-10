@@ -4,8 +4,6 @@ import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, doc, setDoc,getDocs,getDoc,where,query,collection,serverTimestamp,updateDoc } from "firebase/firestore"; 
 import toast from 'react-hot-toast';
 
-import { insertNewUser } from './server/insertUser.js';
-
 
 
 const firebaseConfig = {
@@ -42,7 +40,7 @@ export const register = async (name, surname, email, password,birthdate, navigat
                 clearInterval(checkEmailVerification);
                 toast.success("Email Confirmed");
 
-                await writeUserData(user.uid, name, surname, birthdate ,user.email,user.photoURL);
+                //await writeUserData(user.uid, name, surname, birthdate ,user.email,user.photoURL);
                 
                 navigate("/login");
             }
@@ -78,7 +76,7 @@ export const signInWithGoogle = async (navigate) => {
         }
 
         // Eğer kullanıcı yoksa, Firestore'a ekle ve "home" sayfasına geç
-        await writeUserData(user.uid, userName, userSurname, "--", user.email);
+        //await writeUserData(user.uid, userName, userSurname, "--", user.email);
 
         return user; // 🔥 Yeni kullanıcıyı da dön
     } catch (error) {
@@ -108,7 +106,7 @@ async function writeUserData(uid, name, surname, birthdate, email) {
     };
 
     try {
-        await insertNewUser(user);
+        //await insertNewUser(user);
         console.log("User data added to MongoDB Atlas");
     } catch (error) {
         console.error("MongoDB insert failed:", error);

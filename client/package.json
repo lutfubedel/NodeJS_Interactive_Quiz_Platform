@@ -12,7 +12,9 @@
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.13.2",
     "@tailwindcss/vite": "^4.0.13",
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
+    "express": "^5.1.0",
     "firebase": "^11.4.0",
     "framer-motion": "^12.5.0",
     "lucide-react": "^0.485.0",
