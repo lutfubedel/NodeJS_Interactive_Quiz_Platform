@@ -1,10 +1,22 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
+import socket from "../socket";
 
 function StartQuiz() {
+  useEffect(() => {
+    socket.on("connected", (data) => {
+      console.log("Sunucudan mesaj geldi:", data.message);
+    });
+
+    return () => {
+      socket.off("connected");
+    };
+  }, []); // ✅ sadece component en başında
+
   const handleStartQuiz = () => {
     console.log("Quiz başlatılıyor...");
-    // Buraya Socket.IO emit veya yönlendirme işlemi eklenecek
+    // socket.emit(...) gibi işlemler
   };
 
   return (
@@ -41,5 +53,7 @@ function StartButton({ handleStartQuiz }) {
     </motion.button>
   );
 }
+
+
 
 export default StartQuiz;
