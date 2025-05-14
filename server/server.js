@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import records from "./routes/record.js"; // 🔧 Uzantı eklendi
 import dotenv from "dotenv";
+import http from "http"; 
+import { Server } from "socket.io"; 
+
 
 dotenv.config();
 
@@ -15,3 +18,4 @@ app.use("/record", records);
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
