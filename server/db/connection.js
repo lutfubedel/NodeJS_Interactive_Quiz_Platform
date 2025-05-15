@@ -1,9 +1,10 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
-import dotenv from "dotenv";
+import { MongoClient, ServerApiVersion } from 'mongodb';
+import dotenv from 'dotenv';
+import { clear } from 'console';
 
 dotenv.config();
-const URI = process.env.VITE_ATLAS_URI
 
+const URI = process.env.VITE_ATLAS_URI;
 const client = new MongoClient(URI, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -12,16 +13,22 @@ const client = new MongoClient(URI, {
   },
 });
 
-try {
-  // Connect the client to the server
-  await client.connect();
-  // Send a ping to confirm a successful connection
-  await client.db("admin").command({ ping: 1 });
-  console.log("Pinged your deployment. You successfully connected to MongoDB!");
-} catch (err) {
-  console.error(err);
+async function connectToDatabase() {
+  try {
+    await client.connect();
+    await client.db('admin').command({ ping: 1 });
+    console.log('Pinged your deployment. You successfully connected to MongoDB!');
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-let db = client.db("employees");
+function closeDatabase() {
+  return client.close();
+}
 
+let db = client.db('employees');
+
+// Export functions
+export { connectToDatabase, closeDatabase };
 export default db;

@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "jest-test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "echo \"Use 'npm run node-test' or 'npm run jest-test'\"",
+    "node-test": "node --test tests/db.test.js"
   },
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.13.2",
