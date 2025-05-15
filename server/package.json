@@ -5,8 +5,13 @@
   "main": "index.js",
   "scripts": {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     "test": "echo \"Use 'npm run node-test' or 'npm run jest-test'\"",
     "jest-test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+=======
+    "jest-test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "echo \"Use 'npm run node-test' or 'npm run jest-test'\"",
+>>>>>>> Stashed changes
 =======
     "jest-test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test": "echo \"Use 'npm run node-test' or 'npm run jest-test'\"",
@@ -31,6 +36,9 @@
     "mongodb": "^6.16.0"
   },
   "devDependencies": {
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     "jest": "^29.7.0",
     "supertest": "^7.1.1"
