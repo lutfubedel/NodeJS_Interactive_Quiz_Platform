@@ -1,7 +1,10 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 .env
 node_modules
 =======
+=======
+>>>>>>> Stashed changes
 # Logs
 logs
 *.log
@@ -26,4 +29,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

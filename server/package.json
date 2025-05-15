@@ -4,8 +4,13 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+<<<<<<< Updated upstream
     "test": "echo \"Use 'npm run node-test' or 'npm run jest-test'\"",
     "jest-test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+=======
+    "jest-test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "echo \"Use 'npm run node-test' or 'npm run jest-test'\"",
+>>>>>>> Stashed changes
     "node-test": "node --test tests/db.test.js"
   },
   "keywords": [],
@@ -16,11 +21,17 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+<<<<<<< Updated upstream
     "mongodb": "^6.16.0",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
+=======
+    "mongodb": "^6.16.0"
+  },
+  "devDependencies": {
+>>>>>>> Stashed changes
     "jest": "^29.7.0",
     "supertest": "^7.1.1"
   }
