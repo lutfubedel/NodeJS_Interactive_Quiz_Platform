@@ -3,7 +3,7 @@ import { motion } from "framer-motion"; // Framer Motion kullanıyoruz
 import Buttons from "../Components/AnimatedButtons"; // Butonları component olarak import ettik
 import { useAuth } from "../context/AuthContext";
 import React, {useEffect} from "react";
-
+import { getAuth } from "firebase/auth";
 
 function Home() {
   const navigate = useNavigate();
@@ -13,8 +13,15 @@ function Home() {
 
 
   useEffect(() => {
-    console.log("Firebase kullanıcısı:", currentUser);
-    console.log("MongoDB'den gelen kullanıcı verisi:", userData);
+    try {
+      const auth = getAuth();
+      console.log("Firebase bağlantısı başarılı:", auth);
+    } catch (error) {
+      console.error("Firebase bağlantı hatası:", error);
+    }
+
+    //console.log("Firebase kullanıcısı:", currentUser);
+    //console.log("MongoDB'den gelen kullanıcı verisi:", userData);
   }, [currentUser, userData]);
 
 
