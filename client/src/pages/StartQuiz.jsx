@@ -12,7 +12,7 @@ function StartQuiz() {
     return () => {
       socket.off("connected");
     };
-  }, []); // ✅ sadece component en başında
+  }, []); // sadece component en başında
 
   const handleStartQuiz = () => {
     console.log("Quiz başlatılıyor...");
