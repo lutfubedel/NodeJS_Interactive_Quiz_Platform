@@ -15,7 +15,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/UserPage");
+    navigate("/statistics");
     // try {
     //   const user = await loginWithMail(email, password, navigate);
     //   if (user) {

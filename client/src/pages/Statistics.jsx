@@ -4,7 +4,7 @@ import UserStats from "../Components/UserStats";
 import Background from "../Components/Background";
 import { motion } from "framer-motion";
 
-const Dashboard = () => {
+const Staistics = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -12,7 +12,7 @@ const Dashboard = () => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
       if (window.innerWidth > 768) {
-        setIsExpanded(false); // masaüstünde expanded sidebar default kapalı
+        setIsExpanded(true); // masaüstünde expanded sidebar default kapalı
       }
     };
     window.addEventListener("resize", handleResize);
@@ -70,4 +70,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Staistics;

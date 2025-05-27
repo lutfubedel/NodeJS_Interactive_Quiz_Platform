@@ -2,7 +2,6 @@ import Sidebar from "../Components/Sidebar";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const sidebarCollapsedWidth = 64;
 const sidebarExpandedWidth = 260;
 
 export default function ProfilePage() {
