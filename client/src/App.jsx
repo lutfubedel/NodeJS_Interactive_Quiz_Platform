@@ -6,9 +6,10 @@ import EmailVerification from "./auth/emailVerification";
 import Terms from "./auth/terms";
 import CreateProfile from "./auth/createProfile";
 import Home from "./pages/Home";
-import StartQuiz from "./pages/StartQuiz";
+import Statistics from "./pages/Statistics";
 import JoinQuiz from "./pages/JoinQuiz";
-import { AuthProvider } from "./context/AuthContext"; 
+import { AuthProvider } from "./context/AuthContext";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -19,8 +20,9 @@ function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/forgetPassword" element={<EmailVerification />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/statistics" element={<Statistics />} />
           <Route path="/create_profile" element={<CreateProfile />} />
-          <Route path="/startquiz" element={<StartQuiz />} />
           <Route path="/joinquiz" element={<JoinQuiz />} />
           <Route path="/home" element={<Home />} />
           <Route path="/" element={<Home />} />

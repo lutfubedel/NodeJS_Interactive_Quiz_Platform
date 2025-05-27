@@ -127,7 +127,7 @@
 }
 
 /* AnimatedButtons.jsx  */
-.quiz-choose-button {
+.login-button {
   @apply bg-white text-blue-600 font-semibold py-3 px-8 rounded-xl shadow  transform hover:scale-105;
 }
 /* Join Quiz Page */
@@ -141,3 +141,27 @@
   font-size: 1.3rem; /* İstediğiniz font boyutunu ayarlayabilirsiniz */
   font-weight: light; /* İstediğiniz font ağırlığını seçebilirsiniz */
 }
+
+.animated-gradient {
+  height: 100vh; /* veya istediğin yüksekliği */
+  background: linear-gradient(
+    270deg,
+    #60a5fa,
+    #a78bfa,
+    #f472b6,
+    #34d399,
+    #60a5fa
+  );
+  background-size: 200% 200%; /* geniş tutuyoruz, daha fazla kaydırma alanı */
+  animation: gradientShift 60s linear infinite; /* 60 saniye, linear, sonsuz */
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+

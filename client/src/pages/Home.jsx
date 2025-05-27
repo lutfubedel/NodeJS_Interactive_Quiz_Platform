@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion"; // Framer Motion kullanıyoruz
 import Buttons from "../Components/AnimatedButtons"; // Butonları component olarak import ettik
 import { useAuth } from "../context/AuthContext";
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import { getAuth } from "firebase/auth";
 
 function Home() {
@@ -10,7 +10,6 @@ function Home() {
 
   // Anlık firebase ve mongodb verilerini tutar.
   const { currentUser, userData } = useAuth();
-
 
   useEffect(() => {
     try {
@@ -23,7 +22,6 @@ function Home() {
     //console.log("Firebase kullanıcısı:", currentUser);
     //console.log("MongoDB'den gelen kullanıcı verisi:", userData);
   }, [currentUser, userData]);
-
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-r from-blue-400 to-purple-600 text-white animation-bg-gradient-move">
@@ -43,38 +41,11 @@ function Home() {
         animate={{ opacity: 1, x: 0 }} // Animasyonla sola doğru kayar
         transition={{ duration: 1 }} // Animasyon süresi 1 saniye
       >
-        Quiz başlatmak veya bir oyuna katılmak için seçeneklerden birini seç.
+        Giriş yapmak veya bir oyuna katılmak için seçeneklerden birini seç!
       </motion.p>
 
       {/* Butonlar Componenti */}
       <Buttons navigate={navigate} />
-
-      {/* Alt kısmı ortalamak için flex ve padding kullanıyoruz */}
-      <div className="flex justify-center w-full py-10">
-        <motion.div
-          className="text-sm text-gray-200"
-          initial={{ opacity: 0, y: 200 }} // Başlangıçta aşağıdan 200px dışarıda
-          animate={{ opacity: 1, y: 0 }} // Animasyonla yukarı doğru kayar
-          transition={{ duration: 1 }} // Animasyon süresi 1 saniye
-        >
-          <span className="mx-2">Hesabın yok mu?</span>{" "}
-          <motion.button
-            className="underline cursor-pointer"
-            whileHover={{ scale: 1.1 }} // Framer Motion ile hover'da büyüme animasyonu
-            onClick={() => navigate("/signin")}
-          >
-            Kayıt Ol
-          </motion.button>
-          <span className="mx-2">veya</span>{" "}
-          <motion.button
-            className="underline cursor-pointer"
-            whileHover={{ scale: 1.1 }} // Framer Motion ile hover'da büyüme animasyonu
-            onClick={() => navigate("/login")}
-          >
-            Giriş Yap
-          </motion.button>
-        </motion.div>
-      </div>
     </div>
   );
 }

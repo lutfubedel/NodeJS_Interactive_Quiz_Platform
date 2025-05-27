@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { register } from "../../firebase";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -76,7 +77,12 @@ const SignIn = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-r from-blue-400 to-purple-600 text-white animation-bg-gradient-move">
-      <div className="flex min-h-full flex-col justify-center px-6 py-8 lg:px-8 bg-white border border-gray-300 rounded-2xl shadow-md">
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="flex min-h-full flex-col justify-center px-6 py-8 lg:px-8 bg-white border border-gray-300 rounded-2xl shadow-md"
+      >
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
             Create New Account
@@ -226,7 +232,7 @@ const SignIn = () => {
             </a>
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { loginWithMail, signInWithGoogle } from "../../firebase";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { useAuth } from "../context/AuthContext";
+import { motion } from "framer-motion"; // 🆕 Burada motion import edildi
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,33 +15,27 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    try {
-      const user = await loginWithMail(email, password, navigate);
-
-      if (user) {
-        const userData = { email, token: user.uid };
-        rememberMe
-          ? localStorage.setItem("user", JSON.stringify(userData))
-          : sessionStorage.setItem("user", JSON.stringify(userData));
-
-        //handleAuthState();
-      }
-    } catch (error) {
-      toast.error("Login failed");
-      console.log(error);
-    }
+    navigate("/UserPage");
+    // try {
+    //   const user = await loginWithMail(email, password, navigate);
+    //   if (user) {
+    //     const userData = { email, token: user.uid };
+    //     rememberMe
+    //       ? localStorage.setItem("user", JSON.stringify(userData))
+    //       : sessionStorage.setItem("user", JSON.stringify(userData));
+    //   }
+    // } catch (error) {
+    //   toast.error("Login failed");
+    //   console.log(error);
+    // }
   };
 
   const googleAuthFunc = async (e) => {
     e.preventDefault();
-
     try {
       const user = await signInWithGoogle(navigate);
       localStorage.setItem("user", JSON.stringify(user));
       console.log(user);
-
-      //handleAuthState();
     } catch (error) {
       toast.error("Registration failed:", error.message);
       console.log(error);
@@ -54,38 +47,35 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-r from-blue-400 to-purple-600 text-white animation-bg-gradient-move">
-      <div className="w-full max-w-md p-12 bg-white border border-gray-300 rounded-2xl shadow-md">
+    <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-r from-blue-400 to-purple-600 text-white">
+      {/* 🎥 motion.div ile animasyon eklendi */}
+      <motion.div
+        className="w-full max-w-md p-12 bg-white border border-gray-300 rounded-2xl shadow-md"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
         <h2 className="mb-8 text-center text-2xl font-bold tracking-tight text-gray-900">
-          Welcome to STAPLE
+          Quiz Platforma Hoş Geldin!
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              required
-              autoComplete="email"
-              className="block w-full rounded-md bg-white px-3 py-2 text-gray-900 outline-none border border-gray-300 focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            required
+            onChange={(e) => setEmail(e.target.value)}
+            className="block w-full rounded-md bg-white px-3 py-2 text-gray-900 border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+          />
           <div className="relative">
             <input
-              id="password"
-              name="password"
               type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
+              value={password}
               required
-              autoComplete="current-password"
-              className="block w-full rounded-md bg-white px-3 py-2 text-gray-900 outline-none border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+              onChange={(e) => setPassword(e.target.value)}
+              className="block w-full rounded-md bg-white px-3 py-2 text-gray-900 border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none"
             />
             <button
               type="button"
@@ -97,26 +87,19 @@ const Login = () => {
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            <label className="flex items-center text-sm text-gray-900">
               <input
-                id="remember-me"
-                name="remember-me"
                 type="checkbox"
                 checked={rememberMe}
                 onChange={() => setRememberMe(!rememberMe)}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
               />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 text-sm text-gray-900"
-              >
-                Remember me
-              </label>
-            </div>
+              Remember me
+            </label>
             <button
               type="button"
-              className="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
               onClick={() => navigate("/forgetPassword")}
+              className="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
             >
               Forgot password?
             </button>
@@ -124,7 +107,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-white font-semibold shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-4 rounded-md transition"
           >
             Log in
           </button>
@@ -159,7 +142,7 @@ const Login = () => {
             Register Now
           </a>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 };
