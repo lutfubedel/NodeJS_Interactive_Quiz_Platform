@@ -21,5 +21,3 @@ describe('MongoDB bağlantısı', () => {
     }
   });
 });
-
-//merhaba
