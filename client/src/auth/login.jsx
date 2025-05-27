@@ -26,7 +26,7 @@ const Login = () => {
           ? localStorage.setItem("user", JSON.stringify(userData))
           : sessionStorage.setItem("user", JSON.stringify(userData));
 
-        handleAuthState();
+        //handleAuthState();
       }
     } catch (error) {
       toast.error("Login failed");
@@ -42,7 +42,7 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(user));
       console.log(user);
 
-      handleAuthState();
+      //handleAuthState();
     } catch (error) {
       toast.error("Registration failed:", error.message);
       console.log(error);

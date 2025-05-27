@@ -1,10 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail,signInWithEmailAndPassword} from "firebase/auth";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore, doc, setDoc,getDocs,getDoc,where,query,collection,serverTimestamp,updateDoc } from "firebase/firestore"; 
+import { getFirestore, doc,getDocs,getDoc,where,query,collection,serverTimestamp,updateDoc } from "firebase/firestore"; 
+import axios from 'axios';
 import toast from 'react-hot-toast';
-
-
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -25,26 +24,34 @@ const provider_google = new GoogleAuthProvider();
 const db = getFirestore(app); 
 
 
-// **E-posta ile Kayıt Olma**
-export const register = async (name, surname, email, password,birthdate, navigate) => {
+export const register = async (name, surname, email, password, birthdate, navigate) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        
-        await sendEmailVerification(user);
-        toast.success("Verification email sent! Please check your inbox.");
-        
+
+        //await sendEmailVerification(user);
+        //toast.success("Verification email sent! Please check your inbox.");
+
         const checkEmailVerification = setInterval(async () => {
             await user.reload();
-            if (user.emailVerified) {
+            if (true) { //user.emailVerified
                 clearInterval(checkEmailVerification);
                 toast.success("Email Confirmed");
 
-                //await writeUserData(user.uid, name, surname, birthdate ,user.email,user.photoURL);
-                
+                const newUser = {
+                    uid: user.uid,
+                    name,
+                    surname,
+                    birthdate,
+                    email: user.email
+                };
+
+                await axios.post('http://localhost:5050/api/create-user', newUser);
+
                 navigate("/login");
             }
         }, 3000);
+
         return user;
     } catch (error) {
         toast.error(error.message);
@@ -53,65 +60,34 @@ export const register = async (name, surname, email, password,birthdate, navigat
     }
 };
 
-// **Google ile Kayıt Olma**
+
 export const signInWithGoogle = async (navigate) => {
     try {
         const result = await signInWithPopup(auth, provider_google);
         const user = result.user;
 
-        const userName = user.displayName.split(" ")[0];
-        const userSurname = user.displayName.split(" ")[1];
-        
-        const usersRef = collection(db, "Users");
-        
-        // Kullanıcıyı Firestore'da ara
-        const q = query(usersRef, where("email", "==", user.email));
-        const querySnapshot = await getDocs(q);
+        const userName = user.displayName?.split(" ")[0] || "";
+        const userSurname = user.displayName?.split(" ")[1] || "";
 
-        // Eğer kullanıcı zaten varsa, direk "home" sayfasına geç
-        if (!querySnapshot.empty) {
-            console.log("User already exists, redirecting to home.");
-            navigate("/home");
-            return user; // 🔥 Burada user'ı dön
-        }
+        // !!! Kullanıcı daha önce giriş yapmış mı diye kontrol edilecek !!!
 
-        // Eğer kullanıcı yoksa, Firestore'a ekle ve "home" sayfasına geç
-        //await writeUserData(user.uid, userName, userSurname, "--", user.email);
+        const newUser = {
+            uid: user.uid,
+            name: userName,
+            surname: userSurname,
+            email: user.email,
+        };
 
-        return user; // 🔥 Yeni kullanıcıyı da dön
+        await axios.post('http://localhost:5050/api/create-user', newUser);
+
+        navigate("/home"); 
+        return user;
     } catch (error) {
         console.error("Google Auth Error:", error);
         toast.error("An error occurred while signing in with Google.");
-        throw error; // Hata dışa fırlatılmalı ki try-catch yakalayabilsin
+        throw error;
     }
 };
-
-
-// **Kullanıcı bilgilerini Firestore'a yazma fonksiyonu**
-async function writeUserData(uid, name, surname, birthdate, email) {
-    const friendshipID = await createFriendshipID();
-
-    const user = {
-        userID: uid,
-        photoURL: "",
-        nickName: "",
-        name: name,
-        surname: surname,
-        birthdate: birthdate,
-        createdDate: new Date(), // serverTimestamp() yok artık, Date() kullanıyoruz
-        email: email,
-        friendshipID: friendshipID,
-        friends: {},
-        servers: {},
-    };
-
-    try {
-        //await insertNewUser(user);
-        console.log("User data added to MongoDB Atlas");
-    } catch (error) {
-        console.error("MongoDB insert failed:", error);
-    }
-}
 
 // ** Login **
 export const loginWithMail = async (email, password, navigate) => {
@@ -136,26 +112,6 @@ export const handleResetPassword = async (email) => {
     }
 };
 
-// ** Friendship ID oluşturan fonksiyon **
-const createFriendshipID = async () => {
-    const usersRef = collection(db, "Users"); 
-    let friendshipID;
-    let isUnique = false;
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-    while (!isUnique) {
-        friendshipID = Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");        
-        const q = query(usersRef, where("friendshipID", "==", friendshipID));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            isUnique = true; 
-        }
-    }
-
-    return friendshipID; 
-};
-
 // ** Nickname Güncelleme **
 export const UpdateNickname = async (uid, newValue) => {
     try {
@@ -169,93 +125,6 @@ export const UpdateNickname = async (uid, newValue) => {
         console.error("Database update failed:", error);
     }
 };
-
-// ** FrinedshipID ile Kullanıcı Arama ** 
-export const GetUserByFriendshipID = async (friendshipID) => {
-    try {
-        const usersRef = collection(db, "Users");
-        const q = query(usersRef, where("friendshipID", "==", friendshipID));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-            const userData = querySnapshot.docs[0].data(); // İlk eşleşen kaydı al
-            return userData; // Kullanıcı verisini döndür
-        } else {
-            return null; // Kullanıcı bulunamadı
-        }
-    } catch (error) {
-        console.error("Error fetching user by friendshipID:", error);
-        return null; // Hata durumunda null döndür
-    }
-};
-
-// ** Arkadaş Ekleme **
-export const AddFriend = async (uid,friendID,relation) => {
-    try {
-        const userRef = doc(db, "Users", uid);
-
-        // Yeni arkadaş verisi
-        const newFriendData = {
-            [`friends.${friendID}`]: {
-                relation: relation,
-                relationDate: serverTimestamp()
-            }
-        };
-
-        await updateDoc(userRef, newFriendData);
-        console.log("Friend added successfully");
-    } catch (error) {
-        console.error("Error adding/updating friend:", error);
-    }
-};
-
-// ** Arkadaş Listesine Ulaşma **
-export const getFriendsList = async (uid) => {
-    try {
-        const userRef = doc(db, "Users", uid);
-        const docSnap = await getDoc(userRef);
-
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            const allFriends = data.friends || {};
-
-            // "Friend" olanları dizi olarak döndür
-            const filteredFriendsArray = Object.entries(allFriends)
-                .filter(([_, info]) => info.relation === "Friend")
-                .map(([uid, info]) => ({
-                    uid,
-                    ...info
-                }));
-
-            return filteredFriendsArray;
-        } else {
-            console.log("No such user document!");
-            return [];
-        }
-    } catch (error) {
-        console.error("Error getting friends list:", error);
-        return [];
-    }
-};
-
-// ** ID ile Kullanıcıya Ulaşma **
-export const getUser = async (uid) => {
-    try {
-        const userDocRef = doc(collection(db, "Users"), uid);
-        const userSnap = await getDoc(userDocRef);
-
-        if (userSnap.exists()) {
-            return userSnap.data(); // Belge varsa verisini döndür
-        } else {
-            console.warn("No user found with uid:", uid);
-            return null; // Belge yoksa null döndür
-        }
-    } catch (error) {
-        console.error("Error fetching user by uid:", error);
-        return null; // Hata durumunda null döndür
-    }
-};
-
 
 
 export default app;

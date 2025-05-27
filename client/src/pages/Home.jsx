@@ -1,9 +1,29 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion"; // Framer Motion kullanıyoruz
 import Buttons from "../Components/AnimatedButtons"; // Butonları component olarak import ettik
+import { useAuth } from "../context/AuthContext";
+import React, {useEffect} from "react";
+import { getAuth } from "firebase/auth";
 
 function Home() {
   const navigate = useNavigate();
+
+  // Anlık firebase ve mongodb verilerini tutar.
+  const { currentUser, userData } = useAuth();
+
+
+  useEffect(() => {
+    try {
+      const auth = getAuth();
+      console.log("Firebase bağlantısı başarılı:", auth);
+    } catch (error) {
+      console.error("Firebase bağlantı hatası:", error);
+    }
+
+    //console.log("Firebase kullanıcısı:", currentUser);
+    //console.log("MongoDB'den gelen kullanıcı verisi:", userData);
+  }, [currentUser, userData]);
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-r from-blue-400 to-purple-600 text-white animation-bg-gradient-move">

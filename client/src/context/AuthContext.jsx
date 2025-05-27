@@ -1,37 +1,32 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import axios from "axios";
 
-// 1. Context oluştur
 const AuthContext = createContext();
 
-// 2. Provider bileşeni
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);     // Firebase Auth kullanıcısı
-  const [userData, setUserData] = useState(null);           // Firestore'daki ek kullanıcı verisi
-  const [loading, setLoading] = useState(true);             // Veriler yükleniyor mu?
+  const [currentUser, setCurrentUser] = useState(null); // Firebase kullanıcısı
+  const [userData, setUserData] = useState(null);       // MongoDB'deki kullanıcı bilgisi
+  const [loading, setLoading] = useState(true);
 
   const auth = getAuth();
-  const db = getFirestore();
 
   useEffect(() => {
-    // Firebase Auth dinleyicisi
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
 
       if (user) {
         setCurrentUser(user);
-        try {
-          const userRef = doc(db, "Users", user.uid);
-          const userSnap = await getDoc(userRef);
 
-          if (userSnap.exists()) {
-            setUserData(userSnap.data());
-          } else {
-            setUserData(null);
-          }
+        try {
+          // MongoDB'den kullanıcı bilgilerini çek
+          const res = await axios.post("http://localhost:5050/api/find-user", {
+            uid: user.uid,
+          });
+
+          setUserData(res.data); // API'den dönen kullanıcı verisi
         } catch (error) {
-          console.error("Firestore kullanıcı verisi alınamadı:", error);
+          console.error("MongoDB'den kullanıcı verisi alınamadı:", error);
           setUserData(null);
         }
       } else {
@@ -42,8 +37,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-    return () => unsubscribe(); // Temizlik
-  }, [auth, db]);
+    return () => unsubscribe();
+  }, [auth]);
 
   return (
     <AuthContext.Provider value={{ currentUser, userData, loading }}>
@@ -52,5 +47,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// 3. Custom hook: Context'e erişimi kolaylaştırır
 export const useAuth = () => useContext(AuthContext);
