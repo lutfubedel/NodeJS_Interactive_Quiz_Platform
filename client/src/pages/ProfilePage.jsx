@@ -1,6 +1,8 @@
 import Sidebar from "../Components/Sidebar";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const sidebarExpandedWidth = 260;
 
@@ -8,21 +10,30 @@ export default function ProfilePage() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isEditing, setIsEditing] = useState(false);
+  const { currentUser, userData } = useAuth();
+  const navigate = useNavigate();
 
   const handleToggleSidebar = () => setIsCollapsed(!isCollapsed);
 
   useEffect(() => {
+    console.log("MongoDB'den gelen kullanıcı verisi:", userData);
+    // Kullanıcı yoksa otomatik ana sayfaya sayfasına geçer.
+    if(currentUser == null || userData == null){
+      console.log("User Bulunamadı")
+      navigate("/home");
+    }
+
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const user = {
-    name: "Ahmet",
-    surname: "Birdir",
-    email: "ornek@mail.com",
-    birthdate: "2001-01-01",
-    avatarUrl: "https://via.placeholder.com/150",
+    name: userData.name,
+    surname: userData.surname,
+    email: userData.email,
+    birthdate: userData.birthdate,
+    avatarUrl: userData.avatar_url
   };
 
   const variants = {
@@ -74,8 +85,13 @@ export default function ProfilePage() {
                     : "flex-row items-center"
                 }`}
               >
-                {/* Profil resmi */}
-                <div className="w-24 h-24 bg-red-500 rounded-2xl flex-shrink-0 shadow-lg"></div>
+                <div className="w-24 h-24 rounded-2xl flex-shrink-0 shadow-lg overflow-hidden">
+                  <img
+                    src={user.avatarUrl}
+                    alt="Profil Fotoğrafı"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
 
                 {/* Kullanıcı bilgileri */}
                 <div

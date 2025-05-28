@@ -1,23 +1,7 @@
 import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import {getAuth,createUserWithEmailAndPassword,sendEmailVerification,sendPasswordResetEmail,signInWithEmailAndPassword} from "firebase/auth";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import {
-  getFirestore,
-  doc,
-  getDocs,
-  getDoc,
-  where,
-  query,
-  collection,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
+import {getFirestore,doc,getDocs,getDoc,where,query,collection,serverTimestamp,updateDoc} from "firebase/firestore";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -38,14 +22,7 @@ const auth = getAuth(app);
 const provider_google = new GoogleAuthProvider();
 const db = getFirestore(app);
 
-export const register = async (
-  name,
-  surname,
-  email,
-  password,
-  birthdate,
-  navigate
-) => {
+export const register = async (name,surname,email,password,birthdate,navigate) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -105,7 +82,7 @@ export const signInWithGoogle = async (navigate) => {
 
     await axios.post("http://localhost:5050/api/create-user", newUser);
 
-    navigate("/home");
+    navigate("/statistics");
     return user;
   } catch (error) {
     console.error("Google Auth Error:", error);

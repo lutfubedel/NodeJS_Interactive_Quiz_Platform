@@ -26,7 +26,8 @@ async function connectToMongo() {
 
 // Kullanıcı ekleme
 router.post('/create-user', async (req, res) => {
-  const { uid, name, surname, birthdate, email } = req.body;
+  const randomNumber = Math.floor(Math.random() * 6) + 1;
+  const { uid, name, surname, birthdate, email , avatar_url = "/avatars/avatar_" + randomNumber + ".jpg", nickname = ""} = req.body;
 
   const user = {
     userID: uid,
@@ -35,6 +36,8 @@ router.post('/create-user', async (req, res) => {
     birthdate,
     email,
     createdDate: new Date(),
+    avatar_url,
+    nickname
   };
 
   try {

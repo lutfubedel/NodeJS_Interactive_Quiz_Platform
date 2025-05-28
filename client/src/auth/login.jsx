@@ -15,19 +15,19 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/statistics");
-    // try {
-    //   const user = await loginWithMail(email, password, navigate);
-    //   if (user) {
-    //     const userData = { email, token: user.uid };
-    //     rememberMe
-    //       ? localStorage.setItem("user", JSON.stringify(userData))
-    //       : sessionStorage.setItem("user", JSON.stringify(userData));
-    //   }
-    // } catch (error) {
-    //   toast.error("Login failed");
-    //   console.log(error);
-    // }
+    try {
+      const user = await loginWithMail(email, password, navigate);
+      if (user) {
+         const userData = { email, token: user.uid };
+         rememberMe
+           ? localStorage.setItem("user", JSON.stringify(userData))
+           : sessionStorage.setItem("user", JSON.stringify(userData));
+          navigate("/statistics");
+       }
+     } catch (error) {
+       toast.error("Login failed");
+       console.log(error);
+     }
   };
 
   const googleAuthFunc = async (e) => {

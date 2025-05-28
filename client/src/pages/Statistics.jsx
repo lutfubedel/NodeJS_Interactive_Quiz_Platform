@@ -3,12 +3,25 @@ import Sidebar from "../Components/Sidebar";
 import UserStats from "../Components/UserStats";
 import Background from "../Components/Background";
 import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Staistics = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [, setIsMobile] = useState(window.innerWidth <= 768);
-
+  const navigate = useNavigate();
+  const { currentUser, userData } = useAuth();
+  
   useEffect(() => {
+    console.log("Firebase kullanıcısı:", currentUser);
+    console.log("MongoDB'den gelen kullanıcı verisi:", userData);
+
+    // Kullanıcı yoksa otomatik ana sayfaya sayfasına geçer.
+    if(currentUser == null || userData == null){
+      console.log("User Bulunamadı")
+      navigate("/home");
+    }
+
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
       if (window.innerWidth > 768) {
@@ -17,7 +30,7 @@ const Staistics = () => {
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [currentUser, userData]);
 
   const sidebarCollapsedWidth = 64;
 
