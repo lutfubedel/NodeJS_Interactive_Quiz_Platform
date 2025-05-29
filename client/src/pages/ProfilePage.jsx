@@ -18,8 +18,8 @@ export default function ProfilePage() {
   useEffect(() => {
     console.log("MongoDB'den gelen kullanıcı verisi:", userData);
     // Kullanıcı yoksa otomatik ana sayfaya sayfasına geçer.
-    if(currentUser == null || userData == null){
-      console.log("User Bulunamadı")
+    if (currentUser == null || userData == null) {
+      console.log("User Bulunamadı");
       navigate("/home");
     }
 
@@ -33,7 +33,7 @@ export default function ProfilePage() {
     surname: userData.surname,
     email: userData.email,
     birthdate: userData.birthdate,
-    avatarUrl: userData.avatar_url
+    avatarUrl: userData.avatar_url,
   };
 
   const variants = {
@@ -75,7 +75,14 @@ export default function ProfilePage() {
                       marginTop: "10vh",
                       marginBottom: "10vh",
                     }
-                  : {}
+                  : {
+                      minHeight: "70vh", // yüksekliği ayarlıyoruz
+                      display: "flex", // Flex ile dikey düzen
+                      flexDirection: "column",
+                      justifyContent: "space-between", // Üst içerik + alt buton ayrımı
+                      marginTop: "10vh",
+                      marginBottom: "10vh",
+                    }
               }
             >
               <div

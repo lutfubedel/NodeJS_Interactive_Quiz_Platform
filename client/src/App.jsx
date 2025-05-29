@@ -10,6 +10,7 @@ import Statistics from "./pages/Statistics";
 import JoinQuiz from "./pages/JoinQuiz";
 import { AuthProvider } from "./context/AuthContext";
 import ProfilePage from "./pages/ProfilePage";
+import QuestionBank from "./pages/QuestionBank";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/statistics" element={<Statistics />} />
+          <Route path="/question-bank" element={<QuestionBank />} />
           <Route path="/create_profile" element={<CreateProfile />} />
           <Route path="/joinquiz" element={<JoinQuiz />} />
           <Route path="/home" element={<Home />} />

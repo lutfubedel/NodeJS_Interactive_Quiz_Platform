@@ -11,17 +11,19 @@ import {
   FaChartBar,
   FaPalette,
   FaSignOutAlt,
+  FaPlayCircle,
   FaAngleDoubleLeft,
+  FaClipboardList,
   FaAngleDoubleRight,
 } from "react-icons/fa";
 
 const menuItems = [
   { to: "/profile", icon: <FaUser />, label: "Profil" },
+  { to: "/theme", icon: <FaPlayCircle />, label: "Quize Katıl" },
   { to: "/create-quiz", icon: <FaPlus />, label: "Quiz Oluştur" },
   { to: "/question-bank", icon: <FaQuestionCircle />, label: "Soru Bankası" },
   { to: "/statistics", icon: <FaChartBar />, label: "İstatistikler" },
   { to: "/settings", icon: <FaCog />, label: "Ayarlar" },
-  { to: "/theme", icon: <FaPalette />, label: "Tema" },
   { to: "/logout", icon: <FaSignOutAlt />, label: "Çıkış Yap" },
 ];
 
