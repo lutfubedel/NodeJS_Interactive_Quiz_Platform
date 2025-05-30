@@ -11,7 +11,6 @@ import JoinQuiz from "./pages/JoinQuiz";
 import { AuthProvider } from "./context/AuthContext";
 import ProfilePage from "./pages/ProfilePage";
 import QuestionBankPage from "./pages/QuestionBank/main_page";
-import EditSectionPage from "./pages/QuestionBank/section_edit_page";
 
 function App() {
   return (
@@ -24,7 +23,6 @@ function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/statistics" element={<Statistics />} />
-          <Route path="/edit/:sectionId" element={<EditSectionPage />} />
           <Route path="/question-bank" element={<QuestionBankPage />} />
           <Route path="/create_profile" element={<CreateProfile />} />
           <Route path="/joinquiz" element={<JoinQuiz />} />
