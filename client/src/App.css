@@ -126,6 +126,15 @@
   color: #888;
 }
 
+  /* src/index.css */
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.custom-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* AnimatedButtons.jsx  */
 .login-button {
   @apply bg-white text-blue-600 font-semibold py-3 px-8 rounded-xl shadow  transform hover:scale-105;
