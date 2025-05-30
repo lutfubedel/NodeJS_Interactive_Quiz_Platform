@@ -23,7 +23,4 @@ async function connectToMongo() {
   return db;
 }
 
-
-
-
 export default sectionRoutes;
