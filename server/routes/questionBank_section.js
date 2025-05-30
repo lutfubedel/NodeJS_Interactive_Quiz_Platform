@@ -23,7 +23,7 @@ async function connectToMongo() {
   return db;
 }
 
-// ✅ Yeni bölüm ekle
+
 
 
 export default sectionRoutes;
