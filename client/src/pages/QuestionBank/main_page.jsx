@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../../Components/Sidebar";
+import QuestionBankForm from "../../Components/questionBankForm";
 
 const QuestionBankPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
+  const [showFormPanel, setShowFormPanel] = useState(false);
   const isMobile = windowWidth < 640;
 
   useEffect(() => {
@@ -30,6 +31,27 @@ const QuestionBankPage = () => {
       lastUpdated: "29-05-2025",
       description: "Kapsamlı fizik soru arşivi",
     },
+    {
+      id: 3,
+      name: "Fizik Konuları",
+      creator: "Zeynep Demir",
+      lastUpdated: "29-05-2025",
+      description: "Kapsamlı fizik soru arşivi",
+    },
+    {
+      id: 4,
+      name: "Fizik Konuları",
+      creator: "Zeynep Demir",
+      lastUpdated: "29-05-2025",
+      description: "Kapsamlı fizik soru arşivi",
+    },
+    {
+      id: 5,
+      name: "Fizik Konuları",
+      creator: "Zeynep Demir",
+      lastUpdated: "29-05-2025",
+      description: "Kapsamlı fizik soru arşivi",
+    },
   ]);
 
   return (
@@ -39,47 +61,40 @@ const QuestionBankPage = () => {
         toggleSidebar={() => setIsCollapsed(!isCollapsed)}
       />
       <main
-        className="flex-1 p-4"
+        className={`flex-1 p-4 ${isMobile ? "pt-6" : ""}`}
         style={{
-          paddingLeft: "64px",
-          ...(isMobile
-            ? {
-                minHeight: "auto",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: "10vh",
-                marginBottom: "10vh",
-              }
-            : {
-                minHeight: "70vh",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                marginTop: "10vh",
-                marginBottom: "10vh",
-              }),
+          paddingLeft: isMobile ? "15px" : "64px",
+          minHeight: isMobile ? "auto" : "70vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: isMobile ? "flex-start" : "space-between",
+          alignItems: "center",
+          marginTop: isMobile ? "5vh" : "10vh",
+          marginBottom: isMobile ? "5vh" : "10vh",
+          gap: isMobile ? "1.5rem" : "0",
         }}
       >
         {/* Soru bankası ekle butonu */}
         <div className="flex justify-center mb-6">
-          <button className="bg-white text-indigo-600 font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-indigo-100 transition">
+          <button
+            className="bg-white text-indigo-600 font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-indigo-100 transition"
+            onClick={() => setShowFormPanel(true)}
+          >
             Soru Bankası Ekle
           </button>
         </div>
 
         {/* Soru bankaları listesi */}
         <div
-          className="overflow-y-auto px-2"
+          className="overflow-y-auto px-2 border border-white rounded-xl py-4"
           style={{
-            maxHeight: isMobile ? "60vh" : "50vh",
+            maxHeight: isMobile ? "70vh" : "60vh",
             scrollbarWidth: "none",
             msOverflowStyle: "none",
           }}
         >
           {questionBanks.length === 0 ? (
-            <div className="text-center text-white opacity-80 italic">
+            <div className="text-center text-white opacity-80 italic ">
               Henüz bir soru bankası oluşturulmamış.
             </div>
           ) : (
@@ -88,27 +103,45 @@ const QuestionBankPage = () => {
               .map((bank) => (
                 <div
                   key={bank.id}
-                  className="bg-white text-indigo-800 rounded-xl shadow-md p-4 mb-4 w-full flex justify-between items-center"
+                  className="bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-xl shadow-md p-4 mb-4 w-full flex justify-between items-center"
                 >
                   <div className="flex flex-col text-left">
                     <span className="text-lg font-semibold">{bank.name}</span>
-                    <span className="text-sm text-gray-600 mt-1">
+                    <span className="text-sm mt-1">
                       Oluşturan: {bank.creator}
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm">
                       Son Güncelleme: {bank.lastUpdated}
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm">
                       Açıklama: {bank.description}
                     </span>
                   </div>
-                  <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md transition">
+                  <button className="border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200">
                     Düzenle
                   </button>
                 </div>
               ))
           )}
         </div>
+        {showFormPanel && (
+          <QuestionBankForm
+            onSubmit={(newBank) => {
+              setQuestionBanks((prev) => [
+                {
+                  id: Date.now(),
+                  name: newBank.name,
+                  creator: "Kullanıcı", // Gerçek kullanıcı adı burada olabilir
+                  lastUpdated: new Date().toISOString().slice(0, 10),
+                  description: newBank.description,
+                },
+                ...prev,
+              ]);
+              setShowFormPanel(false);
+            }}
+            onCancel={() => setShowFormPanel(false)}
+          />
+        )}
       </main>
     </div>
   );
