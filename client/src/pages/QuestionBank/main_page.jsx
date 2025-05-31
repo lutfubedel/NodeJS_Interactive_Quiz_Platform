@@ -1,70 +1,55 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Sidebar from "../../Components/Sidebar";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Sidebar from "../../Components/Sidebar";
 import QuestionBankForm from "../../Components/questionBankForm";
+import axios from "axios";
 
 const QuestionBankPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showFormPanel, setShowFormPanel] = useState(false);
+  const [questionBanks, setQuestionBanks] = useState([]);
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
   const isMobile = windowWidth < 640;
 
+  // Kullanıcı kontrolü + veri çekme
   useEffect(() => {
-    console.log("MongoDB'den gelen kullanıcı verisi:", userData);
-    
-    // Kullanıcı yoksa otomatik ana sayfaya sayfasına geçer.
     if (currentUser == null || userData == null) {
-      console.log("User Bulunamadı");
       navigate("/home");
+      return;
     }
+
+    // MongoDB den questionbank listesini çekme
+    const fetchQuestionBanks = async () => {
+      try {
+        const response = await axios.post('http://localhost:5050/api/list-questionBanks', {
+          uid: userData._id,
+        });
+
+        const formattedBanks = response.data.questionBanks.map((bank) => ({
+          id: bank._id,
+          name: bank.title,
+          creator: bank.creator, // Bu alan backend'den gelmiyorsa hardcoded kalabilir
+          lastUpdated: bank.createdDate || "Tarih Yok",
+          description: bank.subtitle || "Açıklama Yok",
+        }));
+
+        setQuestionBanks(formattedBanks);
+      } catch (error) {
+        console.error("Hata oluştu:", error);
+      }
+    };
+
+    fetchQuestionBanks();
 
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [currentUser, userData]);
 
-  // Örnek soru bankaları
-  const [questionBanks, setQuestionBanks] = useState([
-    {
-      id: 1,
-      name: "Matematik Bankası",
-      creator: "Ahmet Yılmaz",
-      lastUpdated: "30-05-2025",
-      description: "Lise düzeyi matematik soruları",
-    },
-    {
-      id: 2,
-      name: "Fizik Konuları",
-      creator: "Zeynep Demir",
-      lastUpdated: "29-05-2025",
-      description: "Kapsamlı fizik soru arşivi",
-    },
-    {
-      id: 3,
-      name: "Fizik Konuları",
-      creator: "Zeynep Demir",
-      lastUpdated: "29-05-2025",
-      description: "Kapsamlı fizik soru arşivi",
-    },
-    {
-      id: 4,
-      name: "Fizik Konuları",
-      creator: "Zeynep Demir",
-      lastUpdated: "29-05-2025",
-      description: "Kapsamlı fizik soru arşivi",
-    },
-    {
-      id: 5,
-      name: "Fizik Konuları",
-      creator: "Zeynep Demir",
-      lastUpdated: "29-05-2025",
-      description: "Kapsamlı fizik soru arşivi",
-    },
-  ]);
+  // ...
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-indigo-500 to-pink-400 text-white">
@@ -86,7 +71,7 @@ const QuestionBankPage = () => {
           gap: isMobile ? "1.5rem" : "0",
         }}
       >
-        {/* Soru bankası ekle butonu */}
+        {/* Ekle butonu */}
         <div className="flex justify-center mb-6">
           <button
             className="bg-white text-indigo-600 font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-indigo-100 transition"
@@ -96,7 +81,7 @@ const QuestionBankPage = () => {
           </button>
         </div>
 
-        {/* Soru bankaları listesi */}
+        {/* Liste */}
         <div
           className="overflow-y-auto px-2 border border-white rounded-xl py-4"
           style={{
@@ -106,7 +91,7 @@ const QuestionBankPage = () => {
           }}
         >
           {questionBanks.length === 0 ? (
-            <div className="text-center text-white opacity-80 italic ">
+            <div className="text-center text-white opacity-80 italic">
               Henüz bir soru bankası oluşturulmamış.
             </div>
           ) : (
@@ -136,6 +121,8 @@ const QuestionBankPage = () => {
               ))
           )}
         </div>
+
+        {/* Form Panel */}
         {showFormPanel && (
           <QuestionBankForm
             onSubmit={(newBank) => {
@@ -143,7 +130,7 @@ const QuestionBankPage = () => {
                 {
                   id: Date.now(),
                   name: newBank.name,
-                  creator: "Kullanıcı", // Gerçek kullanıcı adı burada olabilir
+                  creator: "Kullanıcı",
                   lastUpdated: new Date().toISOString().slice(0, 10),
                   description: newBank.description,
                 },

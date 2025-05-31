@@ -10,6 +10,7 @@ const uri = process.env.VITE_ATLAS_URI;
 const client = new MongoClient(uri);
 let db; 
 
+// MondoDB veritabanına bağlan
 async function connectToMongo() {
   if (!db) {
     try {
@@ -85,13 +86,14 @@ router.post('/find-user', async (req, res) => {
 
 // Soru bankası oluşturma route'u
 router.post('/create-questionBank', async (req, res) => {
-  const { uid, title, subtitle } = req.body;
+  const { uid, title, subtitle , creator} = req.body;
 
   const QBank = {
     userID: uid,
     title,
     subtitle,
     createdDate: getFormattedDate(),
+    creator
   };
 
   try {
@@ -105,6 +107,25 @@ router.post('/create-questionBank', async (req, res) => {
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
+
+
+// Soru bankalarını listeleme route'u
+router.post('/list-questionBanks', async (req, res) => {
+  const { uid } = req.body;
+
+  try {
+    const db = await connectToMongo();
+    const banks = db.collection('question-bank');
+
+    const result = await banks.find({ userID: uid }).sort({ createdDate: -1 }).toArray();
+
+    res.status(200).json({ questionBanks: result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 
 
 export default router;

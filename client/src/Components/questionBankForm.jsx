@@ -36,6 +36,7 @@ const QuestionBankForm = ({ onSubmit, onCancel }) => {
         uid: userData._id, 
         title: name,
         subtitle: description,
+        creator: userData.name
       };
       await axios.post("http://localhost:5050/api/create-questionBank", newQBank);
     };
