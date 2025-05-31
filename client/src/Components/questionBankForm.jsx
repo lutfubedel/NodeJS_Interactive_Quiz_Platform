@@ -1,18 +1,47 @@
 // Components/QuestionBankForm.js
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 const QuestionBankForm = ({ onSubmit, onCancel }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const { currentUser, userData } = useAuth();
+  const navigate = useNavigate();
 
   // Arka plan scroll'u kapat
   useEffect(() => {
+    console.log("MongoDB'den gelen kullanıcı verisi:", userData);
+    // Kullanıcı yoksa otomatik ana sayfaya sayfasına geçer.
+    if (currentUser == null || userData == null) {
+      console.log("User Bulunamadı");
+      navigate("/home");
+    }
+
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
     };
   }, []);
+
+  // Yeni Soru Bankası Oluşturma ve kaydetme
+  const handleConfirm = async () => {
+      if (name.trim() && description.trim()) {
+        onSubmit({ name, description });
+      }
+
+      const newQBank = {
+        uid: userData._id, 
+        title: name,
+        subtitle: description,
+      };
+      await axios.post("http://localhost:5050/api/create-questionBank", newQBank);
+    };
+
+
+
 
   return (
     <AnimatePresence>
@@ -56,11 +85,7 @@ const QuestionBankForm = ({ onSubmit, onCancel }) => {
               İptal
             </button>
             <button
-              onClick={() => {
-                if (name.trim() && description.trim()) {
-                  onSubmit({ name, description });
-                }
-              }}
+              onClick={handleConfirm}
               className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"
             >
               Onayla

@@ -1,15 +1,27 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../../Components/Sidebar";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import QuestionBankForm from "../../Components/questionBankForm";
 
 const QuestionBankPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showFormPanel, setShowFormPanel] = useState(false);
+  const { currentUser, userData } = useAuth();
+  const navigate = useNavigate();
   const isMobile = windowWidth < 640;
 
   useEffect(() => {
+    console.log("MongoDB'den gelen kullanıcı verisi:", userData);
+    
+    // Kullanıcı yoksa otomatik ana sayfaya sayfasına geçer.
+    if (currentUser == null || userData == null) {
+      console.log("User Bulunamadı");
+      navigate("/home");
+    }
+
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);

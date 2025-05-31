@@ -24,6 +24,15 @@ async function connectToMongo() {
   return db;
 }
 
+// Bugunun tarihini "31/05/2025" formatında verir.
+function getFormattedDate() {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // Aylar 0-indexli
+  const year = now.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 // Kullanıcı ekleme
 router.post('/create-user', async (req, res) => {
   const randomNumber = Math.floor(Math.random() * 6) + 1;
@@ -72,5 +81,30 @@ router.post('/find-user', async (req, res) => {
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
+
+
+// Soru bankası oluşturma route'u
+router.post('/create-questionBank', async (req, res) => {
+  const { uid, title, subtitle } = req.body;
+
+  const QBank = {
+    userID: uid,
+    title,
+    subtitle,
+    createdDate: getFormattedDate(),
+  };
+
+  try {
+    const db = await connectToMongo();
+    const banks = db.collection('question-bank');
+
+    const result = await banks.insertOne(QBank);
+    res.status(200).json({ message: 'Soru bankası MongoDB\'ye eklendi', id: result.insertedId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 
 export default router;
