@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
 import express from 'express';
 
@@ -85,26 +85,34 @@ router.post('/find-user', async (req, res) => {
 
 
 // Soru bankası oluşturma route'u
-router.post('/create-questionBank', async (req, res) => {
-  const { uid, title, subtitle , creator} = req.body;
+router.post("/create-questionBank", async (req, res) => {
+  const { uid, title, subtitle, creator } = req.body;
 
-  const QBank = {
-    userID: uid,
-    title,
-    subtitle,
-    createdDate: getFormattedDate(),
-    creator
-  };
+  if (!uid || !title) {
+    return res.status(400).json({ message: "Eksik bilgi" });
+  }
 
   try {
     const db = await connectToMongo();
-    const banks = db.collection('question-bank');
+    const banks = db.collection("question-bank");
 
-    const result = await banks.insertOne(QBank);
-    res.status(200).json({ message: 'Soru bankası MongoDB\'ye eklendi', id: result.insertedId });
+    const newBank = {
+      uid,
+      title,
+      subtitle,
+      creator,
+      createdDate: new Date().toISOString(),
+    };
+
+    const result = await banks.insertOne(newBank);
+
+    // ✅ Eklenen bankayı döndür
+    const createdBank = { ...newBank, _id: result.insertedId };
+
+    res.status(201).json({ message: "Oluşturuldu", createdBank });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    res.status(500).json({ message: "Sunucu hatası" });
   }
 });
 
@@ -120,6 +128,31 @@ router.post('/list-questionBanks', async (req, res) => {
     const result = await banks.find({ userID: uid }).sort({ createdDate: -1 }).toArray();
 
     res.status(200).json({ questionBanks: result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Soru bankası silme route'u
+router.post('/delete-questionBank', async (req, res) => { 
+  const { bankId } = req.body;
+
+  if (!bankId) {
+    return res.status(400).json({ message: 'bankId gerekli' });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const banks = db.collection('question-bank');
+
+    const result = await banks.deleteOne({ _id: new ObjectId(bankId) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Soru bankası bulunamadı veya silinemedi' });
+    }
+
+    res.status(200).json({ message: 'Soru bankası başarıyla silindi' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Sunucu hatası' });
