@@ -11,7 +11,6 @@ import JoinQuiz from "./pages/JoinQuiz";
 import { AuthProvider } from "./context/AuthContext";
 import ProfilePage from "./pages/ProfilePage";
 import QuestionBankPage from "./pages/QuestionBank/main_page";
-import QuestionsPage from "./pages/QuestionBank/question_bank_inside";
 
 function App() {
   return (
@@ -25,7 +24,6 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/question-bank" element={<QuestionBankPage />} />
-          <Route path="/question-bank/:id" element={<QuestionsPage />} />
           <Route path="/create_profile" element={<CreateProfile />} />
           <Route path="/joinquiz" element={<JoinQuiz />} />
           <Route path="/home" element={<Home />} />

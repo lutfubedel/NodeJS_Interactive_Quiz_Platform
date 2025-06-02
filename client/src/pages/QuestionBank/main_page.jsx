@@ -33,7 +33,6 @@ const QuestionBankPage = () => {
             uid: userData._id,
           }
         );
-        console.log("API response:", response.data);
 
         const formattedBanks = response.data.questionBanks.map((bank) => ({
           id: bank._id,
@@ -121,10 +120,7 @@ const QuestionBankPage = () => {
                     </span>
                   </div>
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => navigate(`/question-bank/${bank.id}`)}
-                      className="border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200"
-                    >
+                    <button className="border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200">
                       Düzenle
                     </button>
                     <button
