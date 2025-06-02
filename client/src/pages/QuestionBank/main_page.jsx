@@ -3,7 +3,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../Components/Sidebar";
 import QuestionBankForm from "../../Components/questionBankForm";
-import Popup from "../../Components/popup_window";
 import axios from "axios";
 
 const QuestionBankPage = () => {
@@ -11,9 +10,6 @@ const QuestionBankPage = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showFormPanel, setShowFormPanel] = useState(false);
   const [questionBanks, setQuestionBanks] = useState([]);
-  const [selectedBankId, setSelectedBankId] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
   const isMobile = windowWidth < 640;
@@ -25,19 +21,17 @@ const QuestionBankPage = () => {
       return;
     }
 
+    // MongoDB den questionbank listesini çekme
     const fetchQuestionBanks = async () => {
       try {
-        const response = await axios.post(
-          "http://localhost:5050/api/list-questionBanks",
-          {
-            uid: userData._id,
-          }
-        );
+        const response = await axios.post('http://localhost:5050/api/list-questionBanks', {
+          uid: userData._id,
+        });
 
         const formattedBanks = response.data.questionBanks.map((bank) => ({
           id: bank._id,
           name: bank.title,
-          creator: bank.creator,
+          creator: bank.creator, // Bu alan backend'den gelmiyorsa hardcoded kalabilir
           lastUpdated: bank.createdDate || "Tarih Yok",
           description: bank.subtitle || "Açıklama Yok",
         }));
@@ -55,13 +49,14 @@ const QuestionBankPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [currentUser, userData]);
 
+  // ...
+
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-indigo-500 to-pink-400 text-white">
       <Sidebar
         isCollapsed={isCollapsed}
         toggleSidebar={() => setIsCollapsed(!isCollapsed)}
       />
-
       <main
         className={`flex-1 p-4 ${isMobile ? "pt-6" : ""}`}
         style={{
@@ -69,14 +64,14 @@ const QuestionBankPage = () => {
           minHeight: isMobile ? "auto" : "70vh",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "flex-start",
+          justifyContent: isMobile ? "flex-start" : "space-between",
           alignItems: "center",
           marginTop: isMobile ? "5vh" : "10vh",
           marginBottom: isMobile ? "5vh" : "10vh",
           gap: isMobile ? "1.5rem" : "0",
         }}
       >
-        {/* Ekle Butonu */}
+        {/* Ekle butonu */}
         <div className="flex justify-center mb-6">
           <button
             className="bg-white text-indigo-600 font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-indigo-100 transition"
@@ -119,20 +114,9 @@ const QuestionBankPage = () => {
                       Açıklama: {bank.description}
                     </span>
                   </div>
-                  <div className="flex gap-2">
-                    <button className="border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200">
-                      Düzenle
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedBankId(bank.id);
-                        setShowDeleteModal(true);
-                      }}
-                      className="border border-red-400 text-red-300 hover:bg-red-500/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200"
-                    >
-                      Sil
-                    </button>
-                  </div>
+                  <button className="border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200">
+                    Düzenle
+                  </button>
                 </div>
               ))
           )}
@@ -155,26 +139,6 @@ const QuestionBankPage = () => {
               setShowFormPanel(false);
             }}
             onCancel={() => setShowFormPanel(false)}
-          />
-        )}
-
-        {/* Silme Onayı Modal */}
-        {showDeleteModal && (
-          <Popup
-            show={showDeleteModal}
-            message="Bu soru bankasını silmek istediğinizden emin misiniz?"
-            bankId={selectedBankId}
-            onClose={() => {
-              setShowDeleteModal(false);
-              setSelectedBankId(null);
-            }}
-            onDeleteSuccess={() => {
-              setQuestionBanks((prev) =>
-                prev.filter((bank) => bank.id !== selectedBankId)
-              );
-              setShowDeleteModal(false);
-              setSelectedBankId(null);
-            }}
           />
         )}
       </main>

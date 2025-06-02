@@ -28,18 +28,21 @@ const QuestionBankForm = ({ onSubmit, onCancel }) => {
 
   // Yeni Soru Bankası Oluşturma ve kaydetme
   const handleConfirm = async () => {
-    if (name.trim() && description.trim()) {
-      onSubmit({ name, description });
-    }
+      if (name.trim() && description.trim()) {
+        onSubmit({ name, description });
+      }
 
-    const newQBank = {
-      uid: userData._id,
-      title: name,
-      subtitle: description,
-      creator: userData.name,
+      const newQBank = {
+        uid: userData._id, 
+        title: name,
+        subtitle: description,
+        creator: userData.name
+      };
+      await axios.post("http://localhost:5050/api/create-questionBank", newQBank);
     };
-    await axios.post("http://localhost:5050/api/create-questionBank", newQBank);
-  };
+
+
+
 
   return (
     <AnimatePresence>
