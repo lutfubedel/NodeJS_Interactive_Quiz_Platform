@@ -14,6 +14,28 @@ const QuestionBankPage = () => {
   const navigate = useNavigate();
   const isMobile = windowWidth < 640;
 
+  // MongoDB den questionbank listesini çekme
+  const fetchQuestionBanks = async () => {
+    try {
+      const response = await axios.post('http://localhost:5050/api/list-questionBanks', {
+        uid: userData._id,
+      });
+
+      const formattedBanks = response.data.questionBanks.map((bank) => ({
+        id: bank._id,
+        name: bank.title,
+        creator: bank.creator,
+        lastUpdated: bank.createdDate || "Tarih Yok",
+        description: bank.subtitle || "Açıklama Yok",
+      }));
+
+      setQuestionBanks(formattedBanks);
+    }catch (error) {
+      console.error("Hata oluştu:", error);
+    }
+  };
+
+    
   // Kullanıcı kontrolü + veri çekme
   useEffect(() => {
     if (currentUser == null || userData == null) {
@@ -21,27 +43,7 @@ const QuestionBankPage = () => {
       return;
     }
 
-    // MongoDB den questionbank listesini çekme
-    const fetchQuestionBanks = async () => {
-      try {
-        const response = await axios.post('http://localhost:5050/api/list-questionBanks', {
-          uid: userData._id,
-        });
-
-        const formattedBanks = response.data.questionBanks.map((bank) => ({
-          id: bank._id,
-          name: bank.title,
-          creator: bank.creator, // Bu alan backend'den gelmiyorsa hardcoded kalabilir
-          lastUpdated: bank.createdDate || "Tarih Yok",
-          description: bank.subtitle || "Açıklama Yok",
-        }));
-
-        setQuestionBanks(formattedBanks);
-      } catch (error) {
-        console.error("Hata oluştu:", error);
-      }
-    };
-
+    
     fetchQuestionBanks();
 
     const handleResize = () => setWindowWidth(window.innerWidth);
