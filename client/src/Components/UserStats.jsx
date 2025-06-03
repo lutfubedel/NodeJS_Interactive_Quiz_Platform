@@ -71,11 +71,11 @@ const UserStats = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
       {statCards.map((card, index) => (
         <div
           key={index}
-          className={`bg-gradient-to-r ${card.color} text-white rounded-xl shadow-md p-6 flex items-center gap-4 transform transition duration-300 hover:scale-105`}
+          className={`bg-gradient-to-r ${card.color} text-white rounded-xl shadow-md p-6 flex justify-center items-center gap-4 transform transition duration-300 hover:scale-105`}
         >
           <div className="text-4xl">{card.icon}</div>
           <div>

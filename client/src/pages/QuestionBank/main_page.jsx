@@ -17,9 +17,12 @@ const QuestionBankPage = () => {
   // MongoDB den questionbank listesini çekme
   const fetchQuestionBanks = async () => {
     try {
-      const response = await axios.post('http://localhost:5050/api/list-questionBanks', {
-        uid: userData._id,
-      });
+      const response = await axios.post(
+        "http://localhost:5050/api/list-questionBanks",
+        {
+          uid: userData._id,
+        }
+      );
 
       const formattedBanks = response.data.questionBanks.map((bank) => ({
         id: bank._id,
@@ -30,12 +33,11 @@ const QuestionBankPage = () => {
       }));
 
       setQuestionBanks(formattedBanks);
-    }catch (error) {
+    } catch (error) {
       console.error("Hata oluştu:", error);
     }
   };
 
-    
   // Kullanıcı kontrolü + veri çekme
   useEffect(() => {
     if (currentUser == null || userData == null) {
@@ -43,7 +45,6 @@ const QuestionBankPage = () => {
       return;
     }
 
-    
     fetchQuestionBanks();
 
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -66,7 +67,7 @@ const QuestionBankPage = () => {
           minHeight: isMobile ? "auto" : "70vh",
           display: "flex",
           flexDirection: "column",
-          justifyContent: isMobile ? "flex-start" : "space-between",
+          justifyContent: "flex-start",
           alignItems: "center",
           marginTop: isMobile ? "5vh" : "10vh",
           marginBottom: isMobile ? "5vh" : "10vh",
@@ -85,8 +86,9 @@ const QuestionBankPage = () => {
 
         {/* Liste */}
         <div
-          className="overflow-y-auto px-2 border border-white rounded-xl py-4"
+          className="overflow-y-auto px-2 border border-white rounded-xl py-4 w-full"
           style={{
+            maxWidth: isMobile ? "50vh" : "180vh",
             maxHeight: isMobile ? "70vh" : "60vh",
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -116,7 +118,10 @@ const QuestionBankPage = () => {
                       Açıklama: {bank.description}
                     </span>
                   </div>
-                  <button className="border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200">
+                  <button
+                    className="border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200"
+                    onClick={() => navigate(`/question-bank/${bank.id}`)}
+                  >
                     Düzenle
                   </button>
                 </div>

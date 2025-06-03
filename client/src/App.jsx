@@ -11,6 +11,10 @@ import JoinQuiz from "./pages/JoinQuiz";
 import { AuthProvider } from "./context/AuthContext";
 import ProfilePage from "./pages/ProfilePage";
 import QuestionBankPage from "./pages/QuestionBank/main_page";
+import QuestionsPage from "./pages/QuestionBank/question_bank_inside";
+import QuizHistoryPage from "./pages/Quiz Pages/quizHistoryPage";
+import CreatedQuizzesPage from "./pages/Quiz Pages/createdQuizzesPage";
+import JoinedQuizzesPage from "./pages/Quiz Pages/joinedQuizzesPage";
 
 function App() {
   return (
@@ -24,6 +28,17 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/question-bank" element={<QuestionBankPage />} />
+          <Route path="/question-bank/:bankId" element={<QuestionsPage />} />
+          <Route
+            path="/quiz-history/created-quizzes"
+            element={<CreatedQuizzesPage />}
+          />
+          <Route
+            path="/quiz-history/joined-quizzes"
+            element={<JoinedQuizzesPage />}
+          />
+
+          <Route path="/quiz-history" element={<QuizHistoryPage />} />
           <Route path="/create_profile" element={<CreateProfile />} />
           <Route path="/joinquiz" element={<JoinQuiz />} />
           <Route path="/home" element={<Home />} />

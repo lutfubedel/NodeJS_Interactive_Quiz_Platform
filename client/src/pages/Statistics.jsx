@@ -11,14 +11,15 @@ const Staistics = () => {
   const [, setIsMobile] = useState(window.innerWidth <= 768);
   const navigate = useNavigate();
   const { currentUser, userData } = useAuth();
-  
+  const control = window.innerWidth < 640;
+
   useEffect(() => {
     console.log("Firebase kullanıcısı:", currentUser);
     console.log("MongoDB'den gelen kullanıcı verisi:", userData);
 
     // Kullanıcı yoksa otomatik ana sayfaya sayfasına geçer.
-    if(currentUser == null || userData == null){
-      console.log("User Bulunamadı")
+    if (currentUser == null || userData == null) {
+      console.log("User Bulunamadı");
       navigate("/home");
     }
 
@@ -31,8 +32,6 @@ const Staistics = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [currentUser, userData]);
-
-  const sidebarCollapsedWidth = 64;
 
   return (
     <div className="flex min-h-screen relative bg-gradient-to-r from-blue-400 to-pink-500 text-white">
@@ -53,11 +52,6 @@ const Staistics = () => {
             toggleSidebar={() => setIsExpanded(false)}
             isMobile={true}
           />
-          {/* Bu div'i kaldır */}
-          {/* <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-40"
-      onClick={() => setIsExpanded(false)}
-    /> */}
         </>
       )}
 
@@ -65,7 +59,8 @@ const Staistics = () => {
       <main
         className="flex-1 p-10 overflow-auto"
         style={{
-          marginLeft: sidebarCollapsedWidth,
+          marginLeft: control ? "0px" : "60px",
+          marginTop: control ? "10px" : "0px",
         }}
       >
         <motion.div
