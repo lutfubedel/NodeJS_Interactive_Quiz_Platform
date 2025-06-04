@@ -12,7 +12,7 @@ import QuestionFormModal from "../../Components/QuestionFormModal";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import EditQuestionModal from "../../Components/EditQuestionModal";
-import DeleteConfirmModal from "../../Components/ConfirmationModal";
+import DeleteModal from "../../Components/DeleteModal"; // Yeni modal
 
 const QuestionsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -217,10 +217,11 @@ const QuestionsPage = () => {
         )}
 
         {isDeleteModalOpen && (
-          <DeleteConfirmModal
+          <DeleteModal
+            message="Bu soruyu silmek istediğinize emin misiniz?"
             onClose={() => setIsDeleteModalOpen(false)}
             onConfirm={() => {
-              console.log("Soru silindi:", selectedQuestion);
+              console.log("Soru silme onayı verildi:", selectedQuestion);
               setIsDeleteModalOpen(false);
             }}
           />

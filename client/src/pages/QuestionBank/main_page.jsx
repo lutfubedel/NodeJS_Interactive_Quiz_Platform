@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../Components/Sidebar";
 import QuestionBankForm from "../../Components/questionBankForm";
+import DeleteModal from "../../Components/DeleteModal";
 import axios from "axios";
 import { motion } from "framer-motion";
 
@@ -11,18 +12,34 @@ const QuestionBankPage = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showFormPanel, setShowFormPanel] = useState(false);
   const [questionBanks, setQuestionBanks] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [selectedBankId, setSelectedBankId] = useState(null);
+
+  // Sil butonuna tıklanınca
+  const handleDeleteClick = (bank) => {
+    setPopupMessage(
+      `"${bank.name}" adlı soru bankasını silmek istediğinize emin misiniz?`
+    );
+    setSelectedBankId(bank.id);
+    setShowPopup(true);
+  };
+
+  // onConfirm içinde şimdilik sadece modal kapansın
+  const handleConfirmDelete = () => {
+    console.log("Silinecek ID:", selectedBankId);
+    setShowPopup(false);
+  };
+
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
   const isMobile = windowWidth < 640;
 
-  // MongoDB den questionbank listesini çekme
   const fetchQuestionBanks = async () => {
     try {
       const response = await axios.post(
         "http://localhost:5050/api/list-questionBanks",
-        {
-          uid: userData._id,
-        }
+        { uid: userData._id }
       );
 
       const formattedBanks = response.data.questionBanks.map((bank) => ({
@@ -39,7 +56,6 @@ const QuestionBankPage = () => {
     }
   };
 
-  // Kullanıcı kontrolü + veri çekme
   useEffect(() => {
     if (currentUser == null || userData == null) {
       navigate("/home");
@@ -53,14 +69,13 @@ const QuestionBankPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [currentUser, userData]);
 
-  // ...
-
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-indigo-500 to-pink-400 text-white">
       <Sidebar
         isCollapsed={isCollapsed}
         toggleSidebar={() => setIsCollapsed(!isCollapsed)}
       />
+
       <motion.main
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -78,7 +93,6 @@ const QuestionBankPage = () => {
           gap: isMobile ? "1.5rem" : "0",
         }}
       >
-        {/* Ekle butonu */}
         <div className="flex justify-center mb-6">
           <button
             className="bg-white text-indigo-600 font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-indigo-100 transition"
@@ -88,7 +102,6 @@ const QuestionBankPage = () => {
           </button>
         </div>
 
-        {/* Liste */}
         <div
           className="overflow-y-auto px-2 border border-white rounded-xl py-4 w-full"
           style={{
@@ -137,7 +150,7 @@ const QuestionBankPage = () => {
                     </button>
                     <button
                       className="w-32 border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200"
-                      onClick={() => navigate(`/question-bank/${bank.id}`)}
+                      onClick={() => handleDeleteClick(bank)}
                     >
                       Sil
                     </button>
@@ -147,7 +160,6 @@ const QuestionBankPage = () => {
           )}
         </div>
 
-        {/* Form Panel */}
         {showFormPanel && (
           <QuestionBankForm
             onSubmit={(newBank) => {
@@ -164,6 +176,14 @@ const QuestionBankPage = () => {
               setShowFormPanel(false);
             }}
             onCancel={() => setShowFormPanel(false)}
+          />
+        )}
+
+        {showPopup && (
+          <DeleteModal
+            message={popupMessage}
+            onClose={() => setShowPopup(false)}
+            onConfirm={handleConfirmDelete}
           />
         )}
       </motion.main>
