@@ -84,7 +84,6 @@ router.post('/find-user', async (req, res) => {
   }
 });
 
-
 // Soru bankası oluşturma route'u
 router.post('/create-questionBank', async (req, res) => {
   const { uid, title, subtitle , creator} = req.body;
@@ -110,7 +109,6 @@ router.post('/create-questionBank', async (req, res) => {
   }
 });
 
-
 // Soru bankalarını listeleme route'u
 router.post('/list-questionBanks', async (req, res) => {
   const { uid } = req.body;
@@ -128,6 +126,7 @@ router.post('/list-questionBanks', async (req, res) => {
   }
 });
 
+// Soru ekleme route'u
 router.post('/add-question', async (req, res) => {
   const { bankId, question } = req.body;
 
@@ -154,6 +153,89 @@ router.post('/add-question', async (req, res) => {
     res.status(500).json({ message: "Sunucu hatası" });
   }
 });
+
+// Soru bankasını silme route'u (POST ile)
+router.post('/delete-bank', async (req, res) => {
+  const { bankId } = req.body;
+
+  if (!bankId) {
+    return res.status(400).json({ message: "Eksik bankId verisi." });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const banks = db.collection('question-bank');
+
+    const result = await banks.deleteOne({ _id: new ObjectId(bankId) });
+
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: "Soru bankası başarıyla silindi." });
+    } else {
+      res.status(404).json({ message: "Soru bankası bulunamadı." });
+    }
+  } catch (err) {
+    console.error("delete-bank hatası:", err.message);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+// Tüm soruları listler
+router.post('/get-questions', async (req, res) => {
+  const { bankId } = req.body;
+
+  if (!bankId) {
+    return res.status(400).json({ message: "Eksik bankId verisi." });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const banks = db.collection('question-bank');
+
+    const bank = await banks.findOne({ _id: new ObjectId(bankId) });
+
+    if (!bank) {
+      return res.status(404).json({ message: "Soru bankası bulunamadı." });
+    }
+
+    // Sadece questions dizisini döndür
+    res.status(200).json({ questions: bank.questions || [] });
+  } catch (err) {
+    console.error("get-questions hatası:", err.message);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+// Belirtilen metne göre soruyu siler
+router.post('/delete-question', async (req, res) => {
+  const { bankId, questionText } = req.body;
+
+  if (!bankId || !questionText) {
+    return res.status(400).json({ message: "Eksik veri gönderildi (bankId veya questionText)." });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const banks = db.collection('question-bank');
+
+    const result = await banks.updateOne(
+      { _id: new ObjectId(bankId) },
+      { $pull: { questions: { question: questionText } } }
+    );
+
+    if (result.modifiedCount === 1) {
+      res.status(200).json({ message: "Soru başarıyla silindi." });
+    } else {
+      res.status(404).json({ message: "Soru veya soru bankası bulunamadı." });
+    }
+  } catch (err) {
+    console.error("delete-question hatası:", err.message);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+
+
+
 
 
 export default router;

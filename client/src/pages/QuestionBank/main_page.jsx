@@ -26,10 +26,17 @@ const QuestionBankPage = () => {
   };
 
   // onConfirm içinde şimdilik sadece modal kapansın
-  const handleConfirmDelete = () => {
+const handleConfirmDelete = async () => {
+  try {
     console.log("Silinecek ID:", selectedBankId);
+    await axios.post("http://localhost:5050/api/delete-bank", { bankId: selectedBankId });
     setShowPopup(false);
-  };
+    window.location.reload(); 
+  } catch (error) {
+    console.error("Silme işlemi başarısız:", error);
+  }
+};
+
 
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
