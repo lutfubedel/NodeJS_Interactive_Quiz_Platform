@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  ChevronDown,
-  Plus,
-} from "lucide-react";
+import {ChevronLeft,ChevronRight,ChevronUp,ChevronDown,Plus,} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../../Components/Sidebar";
 import QuestionFormModal from "../../Components/QuestionFormModal";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const QuestionsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -16,6 +12,7 @@ const QuestionsPage = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [currentIndex, setCurrentIndex] = useState(0);
   const isMobile = windowWidth < 640;
+  const { bankId } = useParams();
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -23,10 +20,22 @@ const QuestionsPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleSave = (newQuestion) => {
-    console.log("Kaydedilen soru:", newQuestion);
-    setIsModalOpen(false);
-  };
+const handleSave = async (newQuestion) => {
+  console.log("Kaydedilen soru:", newQuestion);
+  console.log("Bank ID:", bankId);
+  try {
+    await axios.post("http://localhost:5050/api/add-question", {
+      bankId: bankId,
+      question: newQuestion,
+    });
+    console.log("Soru başarıyla gönderildi");
+  } catch (error) {
+    console.error("Hata oluştu:", error.response?.data || error.message);
+  }
+
+  setIsModalOpen(false);
+};
+
 
   const questions = [
     {

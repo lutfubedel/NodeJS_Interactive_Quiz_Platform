@@ -1,6 +1,7 @@
 import { MongoClient } from 'mongodb';
 import dotenv from 'dotenv';
-import express from 'express';
+import express from 'express';;
+import { ObjectId } from 'mongodb';
 
 dotenv.config();
 const router = express.Router();
@@ -93,7 +94,8 @@ router.post('/create-questionBank', async (req, res) => {
     title,
     subtitle,
     createdDate: getFormattedDate(),
-    creator
+    creator,
+    questions: []
   };
 
   try {
@@ -126,6 +128,32 @@ router.post('/list-questionBanks', async (req, res) => {
   }
 });
 
+router.post('/add-question', async (req, res) => {
+  const { bankId, question } = req.body;
+
+  if (!bankId || !question) {
+    return res.status(400).json({ message: "Eksik veri gönderildi." });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const banks = db.collection('question-bank');
+
+    const result = await banks.updateOne(
+      { _id: new ObjectId(bankId) }, 
+      { $push: { questions: question } }
+    );
+
+    if (result.modifiedCount === 1) {
+      res.status(200).json({ message: "Soru başarıyla eklendi." });
+    } else {
+      res.status(404).json({ message: "Soru bankası bulunamadı." });
+    }
+  } catch (err) {
+    console.error("add-question hatası:", err.message);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
 
 
 export default router;
