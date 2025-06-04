@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../Components/Sidebar";
 import QuestionBankForm from "../../Components/questionBankForm";
 import axios from "axios";
+import { motion } from "framer-motion";
 
 const QuestionBankPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -60,7 +61,10 @@ const QuestionBankPage = () => {
         isCollapsed={isCollapsed}
         toggleSidebar={() => setIsCollapsed(!isCollapsed)}
       />
-      <main
+      <motion.main
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] }}
         className={`flex-1 p-4 ${isMobile ? "pt-6" : ""}`}
         style={{
           paddingLeft: isMobile ? "15px" : "64px",
@@ -118,12 +122,26 @@ const QuestionBankPage = () => {
                       Açıklama: {bank.description}
                     </span>
                   </div>
-                  <button
-                    className="border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200"
-                    onClick={() => navigate(`/question-bank/${bank.id}`)}
+                  <div
+                    className={`flex justify-end ${
+                      isMobile
+                        ? "flex-col gap-y-3 items-end"
+                        : "flex-row gap-x-3"
+                    }`}
                   >
-                    Düzenle
-                  </button>
+                    <button
+                      className="w-32 border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200"
+                      onClick={() => navigate(`/question-bank/${bank.id}`)}
+                    >
+                      Düzenle
+                    </button>
+                    <button
+                      className="w-32 border border-white/30 text-white/90 hover:bg-white/20 backdrop-blur-sm font-semibold py-2 px-5 rounded-xl transition duration-200"
+                      onClick={() => navigate(`/question-bank/${bank.id}`)}
+                    >
+                      Sil
+                    </button>
+                  </div>
                 </div>
               ))
           )}
@@ -148,7 +166,7 @@ const QuestionBankPage = () => {
             onCancel={() => setShowFormPanel(false)}
           />
         )}
-      </main>
+      </motion.main>
     </div>
   );
 };

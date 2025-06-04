@@ -1,10 +1,18 @@
 import { useState, useEffect } from "react";
-import {ChevronLeft,ChevronRight,ChevronUp,ChevronDown,Plus,} from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  Plus,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../../Components/Sidebar";
 import QuestionFormModal from "../../Components/QuestionFormModal";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import EditQuestionModal from "../../Components/EditQuestionModal";
+import DeleteConfirmModal from "../../Components/ConfirmationModal";
 
 const QuestionsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -13,6 +21,9 @@ const QuestionsPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const isMobile = windowWidth < 640;
   const { bankId } = useParams();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -20,22 +31,21 @@ const QuestionsPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-const handleSave = async (newQuestion) => {
-  console.log("Kaydedilen soru:", newQuestion);
-  console.log("Bank ID:", bankId);
-  try {
-    await axios.post("http://localhost:5050/api/add-question", {
-      bankId: bankId,
-      question: newQuestion,
-    });
-    console.log("Soru başarıyla gönderildi");
-  } catch (error) {
-    console.error("Hata oluştu:", error.response?.data || error.message);
-  }
+  const handleSave = async (newQuestion) => {
+    console.log("Kaydedilen soru:", newQuestion);
+    console.log("Bank ID:", bankId);
+    try {
+      await axios.post("http://localhost:5050/api/add-question", {
+        bankId: bankId,
+        question: newQuestion,
+      });
+      console.log("Soru başarıyla gönderildi");
+    } catch (error) {
+      console.error("Hata oluştu:", error.response?.data || error.message);
+    }
 
-  setIsModalOpen(false);
-};
-
+    setIsModalOpen(false);
+  };
 
   const questions = [
     {
@@ -122,7 +132,7 @@ const handleSave = async (newQuestion) => {
                   y: isMobile ? -100 : 0,
                 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="absolute w-full bg-white/20 backdrop-blur-md border border-white/30 rounded-xl shadow-md p-3 text-white max-w-xl"
+                className="w-full bg-white/20 backdrop-blur-md border border-white/30 rounded-xl shadow-md p-3 text-white max-w-xl"
               >
                 {currentQuestion.image && (
                   <img
@@ -148,10 +158,22 @@ const handleSave = async (newQuestion) => {
                   ))}
                 </div>
                 <div className="flex justify-center gap-3">
-                  <button className="px-4 py-1 bg-indigo-500 rounded-lg text-sm text-white hover:scale-105 transition">
+                  <button
+                    className="px-4 py-1 bg-indigo-500 rounded-lg text-sm text-white hover:scale-105 transition"
+                    onClick={() => {
+                      setSelectedQuestion(currentQuestion);
+                      setIsEditModalOpen(true);
+                    }}
+                  >
                     Düzenle
                   </button>
-                  <button className="px-4 py-1 bg-pink-400 text-white rounded-lg text-sm hover:scale-105 transition">
+                  <button
+                    className="px-4 py-1 bg-pink-400 text-white rounded-lg text-sm hover:scale-105 transition"
+                    onClick={() => {
+                      setSelectedQuestion(currentQuestion);
+                      setIsDeleteModalOpen(true);
+                    }}
+                  >
                     Sil
                   </button>
                 </div>
@@ -180,6 +202,27 @@ const handleSave = async (newQuestion) => {
           <QuestionFormModal
             onClose={() => setIsModalOpen(false)}
             onSave={handleSave}
+          />
+        )}
+
+        {isEditModalOpen && (
+          <EditQuestionModal
+            question={selectedQuestion}
+            onClose={() => setIsEditModalOpen(false)}
+            onSave={(updated) => {
+              console.log("Düzenlenen soru:", updated);
+              setIsEditModalOpen(false);
+            }}
+          />
+        )}
+
+        {isDeleteModalOpen && (
+          <DeleteConfirmModal
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={() => {
+              console.log("Soru silindi:", selectedQuestion);
+              setIsDeleteModalOpen(false);
+            }}
           />
         )}
       </main>

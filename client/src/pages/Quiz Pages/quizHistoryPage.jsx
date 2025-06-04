@@ -23,7 +23,12 @@ export default function QuizHistoryPage() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 p-6 flex flex-col items-center justify-center z-0">
+      <motion.main
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="flex-1 p-6 flex flex-col items-center justify-center z-0"
+      >
         <h1 className="text-3xl md:text-4xl font-bold mb-8 drop-shadow-lg">
           Quiz Geçmişi
         </h1>
@@ -55,7 +60,7 @@ export default function QuizHistoryPage() {
             </p>
           </motion.div>
         </div>
-      </main>
+      </motion.main>
     </div>
   );
 }
