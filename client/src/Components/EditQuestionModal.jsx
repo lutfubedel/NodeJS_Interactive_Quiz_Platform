@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const EditQuestionModal = ({ question, onClose, onSave }) => {
+  const { bankId } = useParams();
+
   const [editedQuestion, setEditedQuestion] = useState({
     image: question.image,
-    text: question.text,
+    text: question.question,
     options: [...question.options],
-    correctIndex: 0,
+    correctIndex:
+      question.correctAnswer && typeof question.correctAnswer === "string"
+        ? question.correctAnswer.charCodeAt(0) - 65
+        : 0,
   });
 
   const [isClosing, setIsClosing] = useState(false);
@@ -21,14 +28,32 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
     setIsClosing(true);
     setTimeout(() => {
       onClose();
-    }, 300); // animasyon süresi kadar
+    }, 300);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsClosing(true);
+
+    const payload = {
+      bankId: bankId,
+      originalText: question.question,
+      updatedQuestion: {
+        question: editedQuestion.text,
+        options: editedQuestion.options,
+        correctIndex: editedQuestion.correctIndex,
+        image: editedQuestion.image,
+      },
+    };
+
+    try {
+      await axios.post("http://localhost:5050/api/update-question", payload);
+    } catch (error) {
+      console.error("Soru güncelleme hatası:", error);
+    }
+
     setTimeout(() => {
       onSave(editedQuestion);
-    }, 300); // animasyon süresi kadar
+    }, 300);
   };
 
   return (
@@ -45,6 +70,7 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
           >
             <h2 className="text-xl font-bold text-center">Soru Düzenle</h2>
 
+            {/* Görsel placeholder */}
             <div className="w-full bg-white/40 text-gray-800 p-3 rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-white/60 h-20 cursor-not-allowed">
               <p className="text-sm text-gray-700 font-medium">
                 Görsel buraya yüklenecek
@@ -54,6 +80,7 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
               </p>
             </div>
 
+            {/* Soru metni */}
             <textarea
               placeholder="Soru metni"
               value={editedQuestion.text}
@@ -63,6 +90,7 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
               className="resize-none overflow-y-auto w-full p-2 rounded bg-white/40 text-gray-800 focus:outline-none focus:ring-1 focus:ring-white"
             />
 
+            {/* Seçenekler */}
             {editedQuestion.options.map((opt, i) => (
               <div key={i} className="w-full flex items-center mb-1">
                 <div className="w-6 text-gray-800 font-bold">
@@ -78,6 +106,7 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
               </div>
             ))}
 
+            {/* Doğru cevap seçimi */}
             <select
               className="w-full p-2 bg-white/40 text-gray-800 rounded"
               value={editedQuestion.correctIndex}
@@ -95,6 +124,7 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
               ))}
             </select>
 
+            {/* Butonlar */}
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={handleClose}

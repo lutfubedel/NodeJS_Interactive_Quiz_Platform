@@ -234,6 +234,45 @@ router.post('/delete-question', async (req, res) => {
 });
 
 
+router.post('/update-question', async (req, res) => {
+  const { bankId, originalText, updatedQuestion } = req.body;
+
+  if (!bankId || !originalText || !updatedQuestion) {
+    return res.status(400).json({ message: "Eksik veri gönderildi." });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const banks = db.collection('question-bank');
+
+    // Doğru cevabı harfe çevir: 0 -> A, 1 -> B, vs.
+    const correctAnswer = String.fromCharCode(65 + updatedQuestion.correctIndex);
+    console.log(correctAnswer)
+    const result = await banks.updateOne(
+      { _id: new ObjectId(bankId), "questions.question": originalText },
+      {
+        $set: {
+          "questions.$.question": updatedQuestion.question,
+          "questions.$.options": updatedQuestion.options,
+          "questions.$.correctAnswer": correctAnswer,
+          "questions.$.image": updatedQuestion.image,
+        }
+      }
+    );
+
+    if (result.modifiedCount === 1) {
+      res.status(200).json({ message: "Soru başarıyla güncellendi." });
+    } else {
+      res.status(404).json({ message: "Soru veya soru bankası bulunamadı." });
+    }
+  } catch (err) {
+    console.error("update-question hatası:", err.message);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+
+
 
 
 
