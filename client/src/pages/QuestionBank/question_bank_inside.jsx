@@ -94,7 +94,7 @@ const QuestionsPage = () => {
             {isMobile ? <ChevronUp className="w-6 h-6 text-white" /> : <ChevronLeft className="w-6 h-6 text-white" />}
           </button>
 
-          <div className="relative flex-1 min-h-[400px] flex items-center justify-center">
+          <div className="relative flex-1 min-h-[400px] flex items-center justify-center flex-col">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -117,7 +117,7 @@ const QuestionsPage = () => {
 
                 <div className="space-y-2 mb-4">
                   {currentQuestion?.options?.map((opt, i) => {
-                    const optionLetter = String.fromCharCode(65 + i); // A, B, C, ...
+                    const optionLetter = String.fromCharCode(65 + i);
                     const isCorrect = currentQuestion?.correctAnswer === optionLetter;
 
                     return (
@@ -160,6 +160,12 @@ const QuestionsPage = () => {
                 </div>
               </motion.div>
             </AnimatePresence>
+
+            {questions.length > 0 && (
+              <p className="text-sm text-white text-center mt-4 w-full">
+                {currentIndex + 1} / {questions.length}
+              </p>
+            )}
           </div>
 
           <button
@@ -196,7 +202,6 @@ const QuestionsPage = () => {
             onClose={() => setIsDeleteModalOpen(false)}
             onConfirm={async () => {
               try {
-                console.log(selectedQuestion?.question);
                 await axios.post("http://localhost:5050/api/delete-question", {
                   bankId: bankId,
                   questionText: selectedQuestion?.question,
