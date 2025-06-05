@@ -154,7 +154,7 @@ router.post('/add-question', async (req, res) => {
   }
 });
 
-// Soru bankasını silme route'u (POST ile)
+// Soru bankasını silme route'u
 router.post('/delete-bank', async (req, res) => {
   const { bankId } = req.body;
 
@@ -233,7 +233,7 @@ router.post('/delete-question', async (req, res) => {
   }
 });
 
-
+// Soru guncelleme route'u
 router.post('/update-question', async (req, res) => {
   const { bankId, originalText, updatedQuestion } = req.body;
 
@@ -245,9 +245,8 @@ router.post('/update-question', async (req, res) => {
     const db = await connectToMongo();
     const banks = db.collection('question-bank');
 
-    // Doğru cevabı harfe çevir: 0 -> A, 1 -> B, vs.
     const correctAnswer = String.fromCharCode(65 + updatedQuestion.correctIndex);
-    console.log(correctAnswer)
+
     const result = await banks.updateOne(
       { _id: new ObjectId(bankId), "questions.question": originalText },
       {
