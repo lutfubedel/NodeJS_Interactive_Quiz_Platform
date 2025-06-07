@@ -33,6 +33,21 @@ const QuestionFormModal = ({ onClose, onSave }) => {
   };
 
   const handleSubmit = () => {
+    if (!question.trim()) {
+    alert("Lütfen soru metnini girin.");
+    return;
+    }
+
+    if (options.some((opt) => !opt.trim())) {
+      alert("Lütfen tüm şıkları doldurun.");
+      return;
+    }
+
+    if (!correctAnswer) {
+      alert("Lütfen doğru cevabı seçin.");
+      return;
+    }
+
     const newQuestion = { question, options, correctAnswer };
     onSave(newQuestion);
   };

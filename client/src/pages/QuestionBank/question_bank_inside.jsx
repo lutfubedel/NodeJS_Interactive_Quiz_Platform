@@ -161,10 +161,23 @@ const QuestionsPage = () => {
               </motion.div>
             </AnimatePresence>
 
+            {/* Sayfa numarası kısa yol butonları */}
             {questions.length > 0 && (
-              <p className="text-sm text-white text-center mt-4 w-full">
-                {currentIndex + 1} / {questions.length}
-              </p>
+              <div className="flex flex-wrap justify-center mt-4 gap-2">
+                {questions.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentIndex(index)}
+                    className={`w-8 h-8 rounded-full font-semibold text-sm flex items-center justify-center transition ${
+                      currentIndex === index
+                        ? "bg-white text-indigo-600"
+                        : "bg-white/30 text-white hover:bg-white/50"
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
 
