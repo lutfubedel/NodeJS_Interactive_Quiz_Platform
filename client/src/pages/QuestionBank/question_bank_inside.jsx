@@ -29,7 +29,10 @@ const QuestionsPage = () => {
 
   const fetchQuestions = async () => {
     try {
-      const response = await axios.post("http://localhost:5050/api/get-questions", { bankId });
+      const response = await axios.post(
+        "http://localhost:5050/api/get-questions",
+        { bankId }
+      );
       setQuestions(response.data.questions);
     } catch (error) {
       console.error("Sorular çekilirken hata oluştu:", error);
@@ -73,7 +76,7 @@ const QuestionsPage = () => {
         className="flex-1 flex items-center justify-center relative overflow-hidden"
         style={{ paddingLeft: isMobile ? "10px" : "64px", minHeight: "100vh" }}
       >
-        <div className="absolute top-6 right-15 z-10">
+        <div className="absolute top-6 right-5 z-10">
           <button
             className="flex bg-white text-indigo-600 font-semibold px-4 py-2 rounded-full shadow-lg hover:bg-indigo-100 transition"
             onClick={() => setIsModalOpen(true)}
@@ -84,31 +87,47 @@ const QuestionsPage = () => {
         </div>
 
         <div
-          className={`flex ${isMobile ? "flex-col" : "flex-row"} items-center justify-center w-full max-w-3xl px-4 gap-4 relative`}
+          className={`flex ${
+            isMobile ? "flex-col" : "flex-row"
+          } items-center justify-center w-full max-w-3xl px-4 gap-4 relative`}
         >
           <button
             onClick={() => setCurrentIndex((prev) => prev - 1)}
             disabled={!canGoBack}
-            className={`p-2 rounded-full bg-white/30 hover:bg-white/50 transition z-10 ${!canGoBack ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`p-2 rounded-full bg-white/30 hover:bg-white/50 transition z-10 ${
+              !canGoBack ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            {isMobile ? <ChevronUp className="w-6 h-6 text-white" /> : <ChevronLeft className="w-6 h-6 text-white" />}
+            {isMobile ? (
+              <ChevronUp className="w-6 h-6 text-white" />
+            ) : (
+              <ChevronLeft className="w-6 h-6 text-white" />
+            )}
           </button>
 
           <div className="relative flex-1 min-h-[400px] flex items-center justify-center flex-col">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
-                initial={{ opacity: 0, x: isMobile ? 0 : 100, y: isMobile ? 100 : 0 }}
+                initial={{
+                  opacity: 0,
+                  x: isMobile ? 0 : 100,
+                  y: isMobile ? 100 : 0,
+                }}
                 animate={{ opacity: 1, x: 0, y: 0 }}
-                exit={{ opacity: 0, x: isMobile ? 0 : -100, y: isMobile ? -100 : 0 }}
+                exit={{
+                  opacity: 0,
+                  x: isMobile ? 0 : -100,
+                  y: isMobile ? -100 : 0,
+                }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="w-full bg-white/20 backdrop-blur-md border border-white/30 rounded-xl shadow-md p-3 text-white max-w-xl"
+                className="w-full bg-white/20 backdrop-blur-md border mt-2 border-white/30 rounded-xl shadow-md p-3 text-white max-w-xl md:max-w-2/4"
               >
                 {currentQuestion?.image && (
                   <img
                     src={currentQuestion.image}
                     alt="Soru görseli"
-                    className="w-full max-h-80 object-contain rounded-md mb-4"
+                    className="w-full max-h-50 object-contain rounded-md mb-4"
                   />
                 )}
                 <p className="text-lg font-semibold mb-4 text-center">
@@ -118,7 +137,8 @@ const QuestionsPage = () => {
                 <div className="space-y-2 mb-4">
                   {currentQuestion?.options?.map((opt, i) => {
                     const optionLetter = String.fromCharCode(65 + i);
-                    const isCorrect = currentQuestion?.correctAnswer === optionLetter;
+                    const isCorrect =
+                      currentQuestion?.correctAnswer === optionLetter;
 
                     return (
                       <div
@@ -129,7 +149,11 @@ const QuestionsPage = () => {
                             : "bg-white/40 backdrop-blur-md text-gray-800"
                         }`}
                       >
-                        <span className={`font-bold w-5 ${isCorrect ? "text-white" : "text-gray-700"}`}>
+                        <span
+                          className={`font-bold w-5 ${
+                            isCorrect ? "text-white" : "text-gray-700"
+                          }`}
+                        >
                           {optionLetter}.
                         </span>
                         <span className="flex-1">{opt}</span>
@@ -183,9 +207,15 @@ const QuestionsPage = () => {
           <button
             onClick={() => setCurrentIndex((prev) => prev + 1)}
             disabled={!canGoForward}
-            className={`p-2 rounded-full bg-white/30 hover:bg-white/50 transition z-10 ${!canGoForward ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`p-2 rounded-full bg-white/30 hover:bg-white/50 transition z-10 ${
+              !canGoForward ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            {isMobile ? <ChevronDown className="w-6 h-6 text-white" /> : <ChevronRight className="w-6 h-6 text-white" />}
+            {isMobile ? (
+              <ChevronDown className="w-6 h-6 text-white" />
+            ) : (
+              <ChevronRight className="w-6 h-6 text-white" />
+            )}
           </button>
         </div>
 
