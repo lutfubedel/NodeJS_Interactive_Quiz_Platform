@@ -17,12 +17,14 @@ const QuestionFormModal = ({ onClose, onSave }) => {
   const [optionCount, setOptionCount] = useState(4);
   const [options, setOptions] = useState(["", "", "", ""]);
   const [correctAnswer, setCorrectAnswer] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleOptionCountChange = (e) => {
     const count = parseInt(e.target.value);
     setOptionCount(count);
-    const newOptions = Array(count).fill("");
-    setOptions(newOptions);
+    setOptions(Array(count).fill(""));
     setCorrectAnswer("");
   };
 
@@ -32,10 +34,37 @@ const QuestionFormModal = ({ onClose, onSave }) => {
     setOptions(newOptions);
   };
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith("image/png")) {
+      alert("Lütfen sadece PNG dosyası yükleyin.");
+      return;
+    }
+
+    setImageFile(file);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setIsUploading(true);
+    try {
+      const res = await fetch("http://localhost:5050/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      setImageUrl(data.url);
+    } catch (error) {
+      console.error("Yükleme hatası:", error);
+      alert("Görsel yüklenemedi.");
+    }
+    setIsUploading(false);
+  };
+
   const handleSubmit = () => {
     if (!question.trim()) {
-    alert("Lütfen soru metnini girin.");
-    return;
+      alert("Lütfen soru metnini girin.");
+      return;
     }
 
     if (options.some((opt) => !opt.trim())) {
@@ -48,7 +77,13 @@ const QuestionFormModal = ({ onClose, onSave }) => {
       return;
     }
 
-    const newQuestion = { question, options, correctAnswer };
+    const newQuestion = {
+      question,
+      options,
+      correctAnswer,
+      image: imageUrl || null,
+    };
+
     onSave(newQuestion);
   };
 
@@ -78,6 +113,7 @@ const QuestionFormModal = ({ onClose, onSave }) => {
 
           <h2 className="text-xl font-bold mb-4">Yeni Soru Ekle</h2>
 
+          {/* Soru Metni */}
           <div className="mb-4">
             <label className="block font-semibold mb-1">Soru Metni</label>
             <textarea
@@ -88,15 +124,73 @@ const QuestionFormModal = ({ onClose, onSave }) => {
             />
           </div>
 
+          {/* Soru Görseli */}
           <div className="mb-4">
-            <label className="block font-semibold mb-1">
-              Soru Görseli (PNG)
-            </label>
-            <div className="w-full h-32 border-2 border-dashed rounded flex items-center justify-center text-gray-500 bg-white/10 backdrop-blur-md">
-              PNG dosyası buraya yüklenecek (şimdilik pasif)
-            </div>
+            <label className="block font-semibold mb-1">Soru Görseli (PNG)</label>
+
+            {!imageUrl && (
+              <label
+                htmlFor="file-upload"
+                className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/40 rounded-lg cursor-pointer bg-white/10 hover:bg-white/20 transition text-white/70"
+              >
+                <svg
+                  className="w-8 h-8 mb-2 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M7 16V4m0 0L3 8m4-4l4 4M17 16v4m0 0l-4-4m4 4l4-4M4 20h16"
+                  />
+                </svg>
+                <span>
+                  PNG dosyası yüklemek için tıklayın <br />
+                  (Max 5MB)
+                </span>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept="image/png"
+                  className="hidden"
+                  onChange={handleImageChange}
+                  disabled={isUploading}
+                />
+              </label>
+            )}
+
+            {/* Yükleme sırasında spinner göster */}
+            {isUploading && (
+              <div className="mt-2 text-center text-white/80 animate-pulse">
+                Yükleniyor...
+              </div>
+            )}
+
+            {/* Yüklenmiş resmi göster */}
+            {imageUrl && !isUploading && (
+              <div className="mt-4 max-h-64 overflow-hidden rounded-lg border border-white/20 shadow">
+                <img
+                  src={imageUrl}
+                  alt="Yüklenen Görsel"
+                  className="w-full h-auto object-contain"
+                />
+                <button
+                  className="mt-2 text-sm text-red-400 hover:text-red-600 underline"
+                  onClick={() => {
+                    setImageFile(null);
+                    setImageUrl("");
+                  }}
+                >
+                  Görseli Kaldır
+                </button>
+              </div>
+            )}
           </div>
 
+
+          {/* Şık Sayısı */}
           <div className="mb-4">
             <label className="block font-semibold mb-1">Şık Sayısı</label>
             <select
@@ -113,6 +207,7 @@ const QuestionFormModal = ({ onClose, onSave }) => {
             </select>
           </div>
 
+          {/* Şıklar */}
           {options.map((opt, index) => (
             <div key={index} className="mb-3">
               <label className="block font-semibold mb-1">
@@ -127,6 +222,7 @@ const QuestionFormModal = ({ onClose, onSave }) => {
             </div>
           ))}
 
+          {/* Doğru Cevap */}
           <div className="mb-4">
             <label className="block font-semibold mb-1">Doğru Cevap</label>
             <select
@@ -149,10 +245,12 @@ const QuestionFormModal = ({ onClose, onSave }) => {
             </select>
           </div>
 
+          {/* Kaydet Butonu */}
           <div className="flex justify-end">
             <button
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
               onClick={handleSubmit}
+              disabled={isUploading}
             >
               Kaydet
             </button>

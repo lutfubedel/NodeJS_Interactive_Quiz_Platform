@@ -108,7 +108,7 @@ const QuestionsPage = () => {
                   <img
                     src={currentQuestion.image}
                     alt="Soru görseli"
-                    className="w-full h-48 object-cover rounded-md mb-4"
+                    className="w-full max-h-80 object-contain rounded-md mb-4"
                   />
                 )}
                 <p className="text-lg font-semibold mb-4 text-center">
@@ -161,7 +161,6 @@ const QuestionsPage = () => {
               </motion.div>
             </AnimatePresence>
 
-            {/* Sayfa numarası kısa yol butonları */}
             {questions.length > 0 && (
               <div className="flex flex-wrap justify-center mt-4 gap-2">
                 {questions.map((_, index) => (
@@ -202,7 +201,6 @@ const QuestionsPage = () => {
             question={selectedQuestion}
             onClose={() => setIsEditModalOpen(false)}
             onSave={(updated) => {
-              console.log("Düzenlenen soru:", updated);
               setIsEditModalOpen(false);
               fetchQuestions();
             }}
@@ -216,7 +214,7 @@ const QuestionsPage = () => {
             onConfirm={async () => {
               try {
                 await axios.post("http://localhost:5050/api/delete-question", {
-                  bankId: bankId,
+                  bankId,
                   questionText: selectedQuestion?.question,
                 });
                 await fetchQuestions();
