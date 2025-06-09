@@ -1,127 +1,124 @@
 import { useState } from "react";
-import QuestionSelectModal from "./QuestionSelectModal";
+import { useNavigate } from "react-router-dom";
 
 const CreateQuizForm = ({ onClose, onQuizCreated }) => {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [questionCount, setQuestionCount] = useState(5);
+  const navigate = useNavigate();
 
-  // Yeni state: QuestionSelectModal açma durumu ve seçilen sorular
-  const [isQuestionSelectOpen, setIsQuestionSelectOpen] = useState(false);
-  const [selectedQuestions, setSelectedQuestions] = useState([]);
+  const getMinDateTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Burada title, subject, startDate, endDate ve seçilen soruları backend'e gönder
-    console.log("Quiz Başlığı:", title);
-    console.log("Konu:", subject);
-    console.log("Başlangıç:", startDate);
-    console.log("Bitiş:", endDate);
-    console.log("Seçilen Sorular:", selectedQuestions);
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-    // Sonra
-    onQuizCreated();
+    //if (start < now) return alert("Başlangıç tarihi şu andan önce olamaz.");
+    //if (end <= start) return alert("Bitiş tarihi, başlangıçtan sonra olmalı.");
+    //if (questionCount < 5 || questionCount > 20)
+      //return alert("Soru sayısı 5 ile 20 arasında olmalı.");
+
+    console.log({ title, subject, startDate, endDate, questionCount });
+    //onQuizCreated();
     onClose();
+    navigate("/add-questions" ,{
+      state: { title, subject, startDate, endDate, questionCount },
+    })
+        
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col text-white text-sm font-medium ">
-          Quiz Adı:
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 p-2 rounded-md bg-white/80 text-black focus:outline-none focus:ring focus:ring-black"
-            required
-          />
-        </label>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-gray-100 p-4 rounded-lg flex flex-col gap-4 max-w-md mx-auto"
+    >
+      <h2 className="text-gray-800 text-lg font-semibold text-center">Quiz Oluştur</h2>
 
-        <label className="flex flex-col text-white text-sm font-medium">
-          Konu:
-          <input
-            type="text"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="mt-1 p-2 rounded-md bg-white/80 text-black focus:outline-none focus:ring focus:ring-black"
-            required
-          />
-        </label>
+      <div className="flex flex-col">
+        <label className="text-gray-700 text-sm mb-1">Quiz Adı</label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="p-2 rounded bg-white text-black text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          required
+        />
+      </div>
 
-        <label className="flex flex-col text-white text-sm font-medium ">
-          Başlangıç Tarihi ve Saati:
+      <div className="flex flex-col">
+        <label className="text-gray-700 text-sm mb-1">Konu</label>
+        <input
+          type="text"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          className="p-2 rounded bg-white text-black text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          required
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="flex flex-col">
+          <label className="text-gray-700 text-sm mb-1">Başlangıç Tarihi</label>
           <input
             type="datetime-local"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="mt-1 p-2 rounded-md bg-white/80 text-black focus:outline-none focus:ring focus:ring-black"
+            className="p-2 rounded bg-white text-black text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             required
+            min={getMinDateTime()}
           />
-        </label>
-
-        <label className="flex flex-col text-white text-sm font-medium">
-          Bitiş Tarihi ve Saati:
+        </div>
+        <div className="flex flex-col">
+          <label className="text-gray-700 text-sm mb-1">Bitiş Tarihi</label>
           <input
             type="datetime-local"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="mt-1 p-2 rounded-md bg-white/80 text-black focus:outline-none focus:ring focus:ring-black"
+            className="p-2 rounded bg-white text-black text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             required
+            min={startDate || getMinDateTime()}
           />
-        </label>
-
-        <div className="flex justify-center">
-          <button
-            type="button"
-            className="text-sm text-white underline mr-4"
-            onClick={() => setIsQuestionSelectOpen(true)}
-          >
-            + Soru Ekle
-          </button>
         </div>
-        {/* Seçilen soruları listele */}
-        {selectedQuestions.length > 0 && (
-          <div className="bg-white/20 rounded p-3 mb-4 text-black max-h-40 overflow-auto">
-            <h4 className="font-semibold mb-2">Seçilen Sorular:</h4>
-            <ul className="list-disc list-inside text-sm">
-              {selectedQuestions.map((q, i) => (
-                <li key={i}>{q.questionText || q.text || "Soru metni yok"}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+      </div>
 
-        <div className="flex justify-center gap-4 pt-2">
-          <button
-            type="submit"
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-transform duration-500 ease-out hover:scale-115"
-          >
-            Kaydet
-          </button>
-          <button
-            type="button"
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-transform duration-500 ease-out hover:scale-115"
-            onClick={onClose}
-          >
-            İptal
-          </button>
-        </div>
-      </form>
-      {/* QuestionSelectModal burada */}
-      {isQuestionSelectOpen && (
-        <QuestionSelectModal
-          onClose={() => setIsQuestionSelectOpen(false)}
-          onSelectQuestions={(questions) => {
-            setSelectedQuestions(questions);
-            setIsQuestionSelectOpen(false);
-          }}
-          // userId veya başka prop varsa ekle
+      <div className="flex flex-col">
+        <label className="text-gray-700 text-sm mb-1">Soru Sayısı (5-20)</label>
+        <input
+          type="number"
+          value={questionCount}
+          onChange={(e) => setQuestionCount(parseInt(e.target.value))}
+          min={5}
+          max={20}
+          className="p-2 rounded bg-white text-black text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          required
         />
-      )}
-    </>
+      </div>
+
+      <div className="flex justify-center gap-3 pt-2">
+        <button
+          type="submit"
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded text-sm font-medium"
+        >
+          Kaydet
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded text-sm font-medium"
+        >
+          İptal
+        </button>
+      </div>
+    </form>
   );
 };
 

@@ -16,6 +16,7 @@ import QuizHistoryPage from "./pages/Quiz Pages/quizHistoryPage";
 import CreatedQuizzesPage from "./pages/Quiz Pages/createdQuizzesPage";
 import JoinedQuizzesPage from "./pages/Quiz Pages/joinedQuizzesPage";
 import CreateQuizPage from "./pages/Quiz Pages/createQuizPage";
+import AddQuestionsPage from "./pages/Quiz Pages/addQuestionPage";
 
 function App() {
   return (
@@ -34,6 +35,11 @@ function App() {
           <Route
             path="/quiz-history/created-quizzes"
             element={<CreatedQuizzesPage />}
+          />
+
+          <Route
+            path="/add-questions"
+            element={<AddQuestionsPage />}
           />
           <Route
             path="/quiz-history/joined-quizzes"

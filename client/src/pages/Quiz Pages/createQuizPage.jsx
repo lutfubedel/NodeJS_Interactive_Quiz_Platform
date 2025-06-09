@@ -4,23 +4,27 @@ import { Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import CreateQuizForm from "../../Components/CreateQuizForm";
+import { useAuth } from "../../context/AuthContext";
 
 const CreateQuizPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [quizzes, setQuizzes] = useState([]);
-
+  
+  const { currentUser, userData } = useAuth();
   const isMobile = windowWidth < 640;
 
   const fetchQuizzes = async () => {
-    try {
-      const response = await axios.get("http://localhost:5050/api/get-quizzes");
-      setQuizzes(response.data.quizzes);
-    } catch (error) {
-      console.error("Quizler çekilirken hata oluştu:", error);
-    }
-  };
+  try {
+    const response = await axios.post("http://localhost:5050/api/list-quizzes", {
+      createdBy: userData.name,
+    });
+    setQuizzes(response.data.quizzes);
+  } catch (error) {
+    console.error("Quizler çekilirken hata oluştu:", error);
+  }
+};
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -93,19 +97,20 @@ const CreateQuizPage = () => {
       {/* Modal ve modal arka planı */}
       <AnimatePresence>
         {isFormOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-50 flex items-center justify-center" // <-- sadeleştirildi
+            >
+
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="w-full max-w-xl bg-white/20 backdrop-blur-md border border-white/30 rounded-xl shadow-md p-6"
+              className="w-full max-w-xl rounded-xl "
             >
               <CreateQuizForm
                 onClose={() => setIsFormOpen(false)}

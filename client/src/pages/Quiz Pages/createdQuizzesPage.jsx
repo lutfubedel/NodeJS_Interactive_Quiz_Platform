@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
+import {ChevronLeft,ChevronRight,ChevronUp,ChevronDown,} from "lucide-react";
 import Sidebar from "../../Components/Sidebar";
 
 const sampleCreatedQuizzes = [

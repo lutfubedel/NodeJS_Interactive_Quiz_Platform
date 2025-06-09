@@ -270,6 +270,66 @@ router.post('/update-question', async (req, res) => {
   }
 });
 
+// quiz olusturma route'u
+router.post('/create-quiz', async (req, res) => {
+  const {
+    title,
+    description,
+    createdBy,
+    questions,
+    startDate,
+    endDate,
+    questionCount,
+    isActive
+  } = req.body;
+
+  const quiz = {
+    title: title || "Adsız Quiz",
+    description: description || "",
+    createdBy: createdBy || "unknown", // userID veya email olabilir
+    questions: questions || [],
+    questionCount: questionCount || (questions ? questions.length : 0),
+    startDate: startDate ? new Date(startDate) : null,
+    endDate: endDate ? new Date(endDate) : null,
+    isActive: typeof isActive === "boolean" ? isActive : false,
+    createdAt: new Date()
+  };
+
+  try {
+    const db = await connectToMongo();
+    const quizzes = db.collection('quizes');
+
+    const result = await quizzes.insertOne(quiz);
+    res.status(200).json({ message: 'Quiz başarıyla kaydedildi', id: result.insertedId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Belirli bir kullanıcıya ait quizleri listeleme (body ile)
+router.post('/list-quizzes', async (req, res) => {
+  const { createdBy } = req.body;
+
+  if (!createdBy) {
+    return res.status(400).json({ message: "'createdBy' alanı gereklidir." });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const quizzes = db.collection('quizes');
+
+    const userQuizzes = await quizzes.find({ createdBy }).toArray();
+
+    res.status(200).json({
+      message: `${createdBy} kullanıcısına ait quizler başarıyla listelendi.`,
+      quizzes: userQuizzes
+    });
+  } catch (err) {
+    console.error('Quiz listeleme hatası:', err);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
 
 
 
