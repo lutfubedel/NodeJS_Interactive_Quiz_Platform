@@ -300,7 +300,7 @@ router.post('/create-quiz', async (req, res) => {
     };
 
     const db = await connectToMongo();
-    const quizzes = db.collection('quizzes');
+    const quizzes = db.collection('quizes');
 
     const result = await quizzes.insertOne(quiz);
 
