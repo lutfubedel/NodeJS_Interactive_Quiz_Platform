@@ -283,10 +283,14 @@ router.post('/create-quiz', async (req, res) => {
     isActive
   } = req.body;
 
+  // Basit bir 6 haneli alfanumerik ID üretimi
+  const ID = Math.random().toString(36).substring(2, 8).toUpperCase(); // Örn: "X9F3B7"
+
   const quiz = {
+    quizId: ID, 
     title: title || "Adsız Quiz",
     description: description || "",
-    createdBy: createdBy || "unknown", // userID veya email olabilir
+    createdBy: createdBy || "unknown",
     questions: questions || [],
     questionCount: questionCount || (questions ? questions.length : 0),
     startDate: startDate ? new Date(startDate) : null,
@@ -300,7 +304,7 @@ router.post('/create-quiz', async (req, res) => {
     const quizzes = db.collection('quizes');
 
     const result = await quizzes.insertOne(quiz);
-    res.status(200).json({ message: 'Quiz başarıyla kaydedildi', id: result.insertedId });
+    res.status(200).json({ message: 'Quiz başarıyla kaydedildi', id: result.insertedId, quizId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Sunucu hatası' });

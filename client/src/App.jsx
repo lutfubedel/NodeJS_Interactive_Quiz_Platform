@@ -17,6 +17,7 @@ import CreatedQuizzesPage from "./pages/Quiz Pages/createdQuizzesPage";
 import JoinedQuizzesPage from "./pages/Quiz Pages/joinedQuizzesPage";
 import CreateQuizPage from "./pages/Quiz Pages/createQuizPage";
 import AddQuestionsPage from "./pages/Quiz Pages/addQuestionPage";
+import QuizSelectionPage from "./pages/SelectQuiz";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/question-bank" element={<QuestionBankPage />} />
           <Route path="/question-bank/:bankId" element={<QuestionsPage />} />
+          <Route path="/quiz-selection" element={<QuizSelectionPage />} />
 
           <Route
             path="/quiz-history/created-quizzes"

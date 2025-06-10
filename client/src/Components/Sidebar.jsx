@@ -21,6 +21,7 @@ import {
 const menuItems = [
   { to: "/profile", icon: <FaUser />, label: "Profil" },
   { to: "/joinquiz", icon: <FaPlayCircle />, label: "Quize Katıl" },
+  { to: "/quiz-selection", icon: <FaPlayCircle />, label: "Quiz Başlat" },
   { to: "/create-quiz", icon: <FaPlus />, label: "Quiz Oluştur" },
   { to: "/quiz-history", icon: <FaHistory />, label: "Quiz Geçmişi" },
   { to: "/question-bank", icon: <FaQuestionCircle />, label: "Soru Bankası" },
