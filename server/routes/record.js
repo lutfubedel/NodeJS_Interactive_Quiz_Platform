@@ -272,44 +272,50 @@ router.post('/update-question', async (req, res) => {
 
 // quiz olusturma route'u
 router.post('/create-quiz', async (req, res) => {
-  const {
-    title,
-    description,
-    createdBy,
-    questions,
-    startDate,
-    endDate,
-    questionCount,
-    isActive
-  } = req.body;
-
-  // Basit bir 6 haneli alfanumerik ID üretimi
-  const ID = Math.random().toString(36).substring(2, 8).toUpperCase(); // Örn: "X9F3B7"
-
-  const quiz = {
-    quizId: ID, 
-    title: title || "Adsız Quiz",
-    description: description || "",
-    createdBy: createdBy || "unknown",
-    questions: questions || [],
-    questionCount: questionCount || (questions ? questions.length : 0),
-    startDate: startDate ? new Date(startDate) : null,
-    endDate: endDate ? new Date(endDate) : null,
-    isActive: typeof isActive === "boolean" ? isActive : false,
-    createdAt: new Date()
-  };
-
   try {
+    const {
+      title,
+      description,
+      createdBy,
+      questions,
+      startDate,
+      endDate,
+      questionCount,
+      isActive
+    } = req.body;
+
+    const quizId = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    const quiz = {
+      quizId, 
+      title: title || "Adsız Quiz",
+      description: description || "",
+      createdBy: createdBy || "unknown",
+      questions: Array.isArray(questions) ? questions : [],
+      questionCount: questionCount || (Array.isArray(questions) ? questions.length : 0),
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
+      isActive: typeof isActive === "boolean" ? isActive : false,
+      createdAt: new Date()
+    };
+
     const db = await connectToMongo();
-    const quizzes = db.collection('quizes');
+    const quizzes = db.collection('quizzes');
 
     const result = await quizzes.insertOne(quiz);
-    res.status(200).json({ message: 'Quiz başarıyla kaydedildi', id: result.insertedId, quizId });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Sunucu hatası' });
+
+    res.status(200).json({
+      message: 'Quiz başarıyla kaydedildi',
+      id: result.insertedId,
+      quizId: quiz.quizId 
+    });
+
+  } catch (error) {
+    console.error('Quiz oluşturulurken hata:', error);
+    res.status(500).json({ message: 'Sunucu hatası', error: error.message });
   }
 });
+
 
 // Belirli bir kullanıcıya ait quizleri listeleme (body ile)
 router.post('/list-quizzes', async (req, res) => {
