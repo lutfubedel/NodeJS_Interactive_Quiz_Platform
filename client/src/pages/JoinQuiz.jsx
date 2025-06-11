@@ -10,7 +10,7 @@ function JoinQuiz() {
   const handleJoin = () => {
     if (roomCode.trim() !== "") {
       console.log("Odaya katılınıyor:", roomCode);
-      navigate(`/QuizRoom/${roomCode}`); // Odaya katılma işlemi: yönlendirme
+      navigate(`/quiz-room/${roomCode}`); // Odaya katılma işlemi: yönlendirme
     } else {
       setShowAlert(true); // Oda kodu girilmediğinde uyarı mesajını göster
     }

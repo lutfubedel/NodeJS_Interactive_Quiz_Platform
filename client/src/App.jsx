@@ -18,6 +18,8 @@ import JoinedQuizzesPage from "./pages/Quiz Pages/joinedQuizzesPage";
 import CreateQuizPage from "./pages/Quiz Pages/createQuizPage";
 import AddQuestionsPage from "./pages/Quiz Pages/addQuestionPage";
 import QuizSelectionPage from "./pages/SelectQuiz";
+import StartQuizPage from "./pages/StartQuiz";
+import QuizRoomPage from "./pages/QuizRoom";
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
           <Route path="/question-bank" element={<QuestionBankPage />} />
           <Route path="/question-bank/:bankId" element={<QuestionsPage />} />
           <Route path="/quiz-selection" element={<QuizSelectionPage />} />
+          <Route path="/start-quiz/:quizId" element={<StartQuizPage />} />
+          <Route path="/quiz-room/:roomCode" element={<QuizRoomPage />} />
 
           <Route
             path="/quiz-history/created-quizzes"

@@ -36,15 +36,84 @@ const io = new Server(server, {
   },
 });
 
-// Socket.IO bağlantısı
+
+// Global odalar objesi
+const rooms = {};  // { roomCode: [{ socketId, name, isHost }] }
+
 io.on("connection", (socket) => {
   console.log("Yeni istemci bağlandı:", socket.id);
   socket.emit("connected", { message: "Socket.IO bağlantısı başarılı!" });
 
+  socket.on("host-join-room", ({ roomCode, hostName }) => {
+    if (!roomCode || !hostName) {
+      socket.emit("error", { message: "Oda kodu ve host adı gereklidir." });
+      return;
+    }
+    socket.join(roomCode);
+    rooms[roomCode] = [{ socketId: socket.id, name: hostName, isHost: true }];
+
+    console.log(`Host oda oluşturdu: ${roomCode} (${hostName})`);
+    io.to(roomCode).emit("update-participants", rooms[roomCode]);
+  });
+
+  // **Buraya bu join-room event'ini ekle:**
+  socket.on("join-room", ({ roomCode, participant }) => {
+    const participantName = participant?.name;
+    if (!roomCode || !participantName) {
+      socket.emit("error", { message: "Oda kodu ve katılımcı adı gereklidir." });
+      return;
+    }
+    if (!rooms[roomCode]) {
+      socket.emit("error", { message: "Geçersiz oda kodu." });
+      return;
+    }
+
+    socket.join(roomCode);
+    rooms[roomCode].push({ socketId: socket.id, name: participantName, isHost: false });
+
+    console.log(`Katılımcı katıldı: ${participantName} -> ${roomCode}`);
+
+    // Yeni katılan kişiyi yayınla:
+    io.to(roomCode).emit("user-joined", { name: participantName, socketId: socket.id });
+
+    // Güncel katılımcı listesini güncelle
+    io.to(roomCode).emit("update-participants", rooms[roomCode]);
+  });
+
+  socket.on("start-quiz", ({ roomCode }) => {
+    if (!roomCode || !rooms[roomCode]) {
+      socket.emit("error", { message: "Geçersiz oda kodu." });
+      return;
+    }
+    console.log(`Quiz başlatıldı: ${roomCode}`);
+    io.to(roomCode).emit("quiz-started");
+  });
+
   socket.on("disconnect", () => {
     console.log("İstemci ayrıldı:", socket.id);
+
+    for (const roomCode in rooms) {
+      const index = rooms[roomCode].findIndex(p => p.socketId === socket.id);
+      if (index !== -1) {
+        const disconnectedUser = rooms[roomCode][index];
+        rooms[roomCode].splice(index, 1);
+
+        console.log(`${disconnectedUser.name} odadan ayrıldı: ${roomCode}`);
+
+        io.to(roomCode).emit("update-participants", rooms[roomCode]);
+
+        const hostExists = rooms[roomCode].some(p => p.isHost);
+        if (!hostExists) {
+          delete rooms[roomCode];
+          console.log(`Host odadan ayrıldı, oda silindi: ${roomCode}`);
+        }
+        break;
+      }
+    }
   });
 });
+
+
 
 // Cloudinary üzerinden dosya yükleme (resim/video)
 app.post("/api/upload", upload.single("file"), async (req, res) => {
