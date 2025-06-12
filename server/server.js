@@ -9,6 +9,7 @@ import { v2 as cloudinary } from "cloudinary";
 import routers from './routes/record.js';
 import { ObjectId } from 'mongodb';
 import { connectToMongo } from './routes/record.js'
+import { getQuizQuestions } from './routes/record.js';
 
 dotenv.config();
 
@@ -117,8 +118,7 @@ socket.on("start-quiz", ({ roomCode }) => {
     io.to(roomCode).emit("quiz-started");
     console.log(`Quiz başlatıldı: ${roomCode}`);
     console.log(rooms[roomCode]);
-  //  startQuizFlow(roomCode);
-  console.log(getQuizQuestions(rooms[roomCode].quizId));
+    startQuizFlow(roomCode);
   }
 });
 
@@ -126,9 +126,9 @@ socket.on("start-quiz", ({ roomCode }) => {
 
 const startQuizFlow = async (roomCode) => {
   const quizId = rooms[roomCode].quizId;
-  const quizData = await getQuizFromDatabase(quizId); // Quiz sorularını al
+  const questions = await getQuizQuestions(quizId); // Quiz sorularını al
+  console.log(`Quiz soruları alındı:`, questions);
 
-  const questions = quizData.questions;
   let currentIndex = 0;
 
   const askNextQuestion = () => {
@@ -145,7 +145,6 @@ const startQuizFlow = async (roomCode) => {
       timeLimit: 30,
     });
 
-    // 30 saniye sonra cevapları işle ve bir sonrakine geç
     setTimeout(() => {
       currentIndex++;
       askNextQuestion();
@@ -156,22 +155,7 @@ const startQuizFlow = async (roomCode) => {
 };
 
 
-async function getQuizQuestions(quizId) {
-  if (!quizId) throw new Error("quizId gereklidir");
 
-  const db = await connectToMongo();
-  const quizzes = db.collection('quizes');
-
-  // quizId ile quizi bul
-  const quiz = await quizzes.findOne({ quizId: quizId });
-
-  if (!quiz) {
-    throw new Error("Quiz bulunamadı");
-  }
-
-  // quiz.questions varsa döndür, yoksa boş dizi
-  return quiz.questions || [];
-}
 
 
 
