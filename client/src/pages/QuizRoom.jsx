@@ -2,22 +2,23 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import socket from "../socket";
 import { useAuth } from "../context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 const QuizRoom = ({ isHost }) => {
   const { roomCode } = useParams();
   const navigate = useNavigate();
-  const { userData } = useAuth(); // Sadece buradan geliyor artık
+  const { userData } = useAuth();
   const [participants, setParticipants] = useState([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (isHost) return;
 
+    socket.emit("join-room", {
+      roomCode,
+      participant: { name: userData?.name || "Misafir" },
+    });
 
-  if (isHost) return; // Host zaten StartQuiz'te katıldı
-  socket.emit("join-room", {
-    roomCode,
-    participant: { name: userData?.name || "Misafir" },
-  });
     const handleUpdateParticipants = (list) => {
       setParticipants(list);
     };
@@ -53,39 +54,89 @@ const QuizRoom = ({ isHost }) => {
 
   if (error) {
     return (
-      <div className="text-red-600 text-center mt-10">
-        Hata: {error}
-        <br />
-        <button onClick={() => navigate("/joinquiz")} className="mt-4 underline">
-          Tekrar dene
-        </button>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-rose-500 to-red-700 text-white px-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-2xl font-bold mb-4">Hata</h1>
+          <p className="mb-4">{error}</p>
+          <button
+            onClick={() => navigate("/joinquiz")}
+            className="bg-white text-red-700 px-5 py-2 rounded-full font-semibold hover:bg-red-100 transition"
+          >
+            Tekrar Dene
+          </button>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">Oda Kodu: {roomCode}</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-700 text-white px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full max-w-2xl bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg"
+      >
+        <h1 className="text-3xl font-extrabold mb-4 text-center">
+          Oda Kodu: <span className="font-mono">{roomCode}</span>
+        </h1>
 
-      <h2 className="text-xl font-semibold mb-3">Katılımcılar:</h2>
-      <ul className="mb-6 list-disc list-inside">
-        {participants.length === 0 ? (
-          <li>Henüz kimse katılmadı.</li>
-        ) : (
-          participants.map((p, index) => (
-            <li key={p?.socketId || index}>{p?.name || "İsimsiz Katılımcı"}</li>
-          ))
+        <h2 className="text-xl font-semibold mb-3">Katılımcılar:</h2>
+
+        <div className="mb-6 bg-white/5 p-4 rounded-lg max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent">
+          <AnimatePresence>
+            {participants.length === 0 ? (
+              <motion.p
+                key="no-participants"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-white/80"
+              >
+                Henüz kimse katılmadı.
+              </motion.p>
+            ) : (
+              <motion.ul
+                key="participants-list"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  visible: {
+                    transition: { staggerChildren: 0.1 },
+                  },
+                }}
+                className="list-disc pl-6 space-y-1"
+              >
+                {participants.map((p, index) => (
+                  <motion.li
+                    key={p?.socketId || index}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                  >
+                    {p?.name || "İsimsiz Katılımcı"}
+                  </motion.li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {isHost && (
+          <motion.button
+            onClick={startQuiz}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="block w-full text-center bg-white text-indigo-700 px-6 py-3 rounded-full font-bold shadow hover:bg-indigo-100 transition"
+          >
+            Quizi Başlat
+          </motion.button>
         )}
-      </ul>
-
-      {isHost && (
-        <button
-          onClick={startQuiz}
-          className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
-        >
-          Quizi Başlat
-        </button>
-      )}
+      </motion.div>
     </div>
   );
 };

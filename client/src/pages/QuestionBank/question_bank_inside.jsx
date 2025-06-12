@@ -13,6 +13,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import EditQuestionModal from "../../Components/EditQuestionModal";
 import DeleteModal from "../../Components/DeleteModal";
+import { useNavigate } from "react-router-dom";
 
 const QuestionsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -23,12 +24,16 @@ const QuestionsPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   const { bankId } = useParams();
   const isMobile = windowWidth < 640;
 
   const fetchQuestions = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.post(
         "http://localhost:5050/api/get-questions",
         { bankId }
@@ -36,6 +41,8 @@ const QuestionsPage = () => {
       setQuestions(response.data.questions);
     } catch (error) {
       console.error("Sorular çekilirken hata oluştu:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,6 +79,17 @@ const QuestionsPage = () => {
         toggleSidebar={() => setIsCollapsed(!isCollapsed)}
       />
 
+      <motion.button
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        onClick={() => navigate("/question-bank")}
+        className="absolute bottom-6 right-5 z-10 flex items-center bg-white text-indigo-600 px-4 py-2 rounded-full shadow hover:bg-indigo-100 transition"
+      >
+        <ChevronLeft className="w-4 h-4 mr-2" />
+        Geri
+      </motion.button>
+
       <main
         className="flex-1 flex items-center justify-center relative overflow-hidden"
         style={{ paddingLeft: isMobile ? "10px" : "64px", minHeight: "100vh" }}
@@ -107,82 +125,107 @@ const QuestionsPage = () => {
 
           <div className="relative flex-1 min-h-[400px] flex items-center justify-center flex-col">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={currentIndex}
-                initial={{
-                  opacity: 0,
-                  x: isMobile ? 0 : 100,
-                  y: isMobile ? 100 : 0,
-                }}
-                animate={{ opacity: 1, x: 0, y: 0 }}
-                exit={{
-                  opacity: 0,
-                  x: isMobile ? 0 : -100,
-                  y: isMobile ? -100 : 0,
-                }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="w-full bg-white/20 backdrop-blur-md border mt-2 border-white/30 rounded-xl shadow-md p-3 text-white max-w-xl md:max-w-2/4"
-              >
-                {currentQuestion?.image && (
-                  <img
-                    src={currentQuestion.image}
-                    alt="Soru görseli"
-                    className="w-full max-h-50 object-contain rounded-md mb-4"
-                  />
-                )}
-                <p className="text-lg font-semibold mb-4 text-center">
-                  {currentQuestion?.question || "Soru bulunamadı."}
-                </p>
+              {isLoading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  className="text-center text-xl font-semibold text-white bg-white/20 backdrop-blur-md rounded-lg px-6 py-12"
+                >
+                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
+                  Yükleniyor...
+                </motion.div>
+              ) : questions.length > 0 ? (
+                <motion.div
+                  key={currentIndex}
+                  initial={{
+                    opacity: 0,
+                    x: isMobile ? 0 : 100,
+                    y: isMobile ? 100 : 0,
+                  }}
+                  animate={{ opacity: 1, x: 0, y: 0 }}
+                  exit={{
+                    opacity: 0,
+                    x: isMobile ? 0 : -100,
+                    y: isMobile ? -100 : 0,
+                  }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  className="w-full bg-white/20 backdrop-blur-md border mt-2 border-white/30 rounded-xl shadow-md p-3 text-white max-w-xl md:max-w-2/4"
+                >
+                  {currentQuestion?.image && (
+                    <img
+                      src={currentQuestion.image}
+                      alt="Soru görseli"
+                      className="w-full max-h-50 object-contain rounded-md mb-4"
+                    />
+                  )}
+                  <p className="text-lg font-semibold mb-4 text-center">
+                    {currentQuestion?.question || "Soru bulunamadı."}
+                  </p>
 
-                <div className="space-y-2 mb-4">
-                  {currentQuestion?.options?.map((opt, i) => {
-                    const optionLetter = String.fromCharCode(65 + i);
-                    const isCorrect =
-                      currentQuestion?.correctAnswer === optionLetter;
+                  <div className="space-y-2 mb-4">
+                    {currentQuestion?.options?.map((opt, i) => {
+                      const optionLetter = String.fromCharCode(65 + i);
+                      const isCorrect =
+                        currentQuestion?.correctAnswer === optionLetter;
 
-                    return (
-                      <div
-                        key={i}
-                        className={`w-full py-3 px-4 rounded-lg font-medium shadow flex items-center gap-2 ${
-                          isCorrect
-                            ? "bg-green-400 text-white"
-                            : "bg-white/40 backdrop-blur-md text-gray-800"
-                        }`}
-                      >
-                        <span
-                          className={`font-bold w-5 ${
-                            isCorrect ? "text-white" : "text-gray-700"
+                      return (
+                        <div
+                          key={i}
+                          className={`w-full py-3 px-4 rounded-lg font-medium shadow flex items-center gap-2 ${
+                            isCorrect
+                              ? "bg-green-400 text-white"
+                              : "bg-white/40 backdrop-blur-md text-gray-800"
                           }`}
                         >
-                          {optionLetter}.
-                        </span>
-                        <span className="flex-1">{opt}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+                          <span
+                            className={`font-bold w-5 ${
+                              isCorrect ? "text-white" : "text-gray-700"
+                            }`}
+                          >
+                            {optionLetter}.
+                          </span>
+                          <span className="flex-1">{opt}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
 
-                <div className="flex justify-center gap-3">
-                  <button
-                    className="px-4 py-1 bg-indigo-500 rounded-lg text-sm text-white hover:scale-105 transition"
-                    onClick={() => {
-                      setSelectedQuestion(currentQuestion);
-                      setIsEditModalOpen(true);
-                    }}
-                  >
-                    Düzenle
-                  </button>
-                  <button
-                    className="px-4 py-1 bg-pink-400 text-white rounded-lg text-sm hover:scale-105 transition"
-                    onClick={() => {
-                      setSelectedQuestion(currentQuestion);
-                      setIsDeleteModalOpen(true);
-                    }}
-                  >
-                    Sil
-                  </button>
-                </div>
-              </motion.div>
+                  <div className="flex justify-center gap-3">
+                    <button
+                      className="px-4 py-1 bg-indigo-500 rounded-lg text-sm text-white hover:scale-105 transition"
+                      onClick={() => {
+                        setSelectedQuestion(currentQuestion);
+                        setIsEditModalOpen(true);
+                      }}
+                    >
+                      Düzenle
+                    </button>
+                    <button
+                      className="px-4 py-1 bg-pink-400 text-white rounded-lg text-sm hover:scale-105 transition"
+                      onClick={() => {
+                        setSelectedQuestion(currentQuestion);
+                        setIsDeleteModalOpen(true);
+                      }}
+                    >
+                      Sil
+                    </button>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="no-questions"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  className="text-center text-xl font-semibold text-white bg-white/20 backdrop-blur-md rounded-lg px-6 py-12"
+                >
+                  Henüz soru oluşturulmadı.
+                </motion.div>
+              )}
             </AnimatePresence>
 
             {questions.length > 0 && (

@@ -5,6 +5,7 @@ import { FileQuestion, Pencil, Trash2 } from "lucide-react";
 import QuestionFormModal from "../../Components/QuestionFormModal";
 import QuestionBankSelectModal from "../../Components/QuestionBankSelectModal";
 import { useAuth } from "../../context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 const AddQuestionsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -22,7 +23,7 @@ const AddQuestionsPage = () => {
     if (location.state) {
       const count = location.state.questionCount || 0;
       setQuestionCount(count);
-      setQuestions(Array(count).fill(null)); // Soru sayısı kadar boş yer
+      setQuestions(Array(count).fill(null));
     }
   }, [location.state]);
 
@@ -43,18 +44,37 @@ const AddQuestionsPage = () => {
   };
 
   const renderQuestionList = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+    <motion.div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: 0.1,
+          },
+        },
+      }}
+    >
       {Array.from({ length: questionCount }).map((_, i) => {
         const question = questions[i];
         return (
-          <div
+          <motion.div
             key={i}
             onClick={() => handleQuestionClick(i)}
             className={`relative rounded-xl p-4 pr-20 transition shadow-md group cursor-pointer
-              ${question
-                ? "bg-green-500/30 ring-2 ring-green-400 text-white"
-                : "bg-white/20 hover:bg-white/30 text-white ring-1 ring-white/10"
+              ${
+                question
+                  ? "bg-green-500/30 ring-2 ring-green-400 text-white"
+                  : "bg-white/20 hover:bg-white/30 text-white ring-1 ring-white/10"
               }`}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            whileHover={{ scale: 1.03 }}
+            transition={{ duration: 0.3 }}
           >
             {question && (
               <div
@@ -88,10 +108,10 @@ const AddQuestionsPage = () => {
                 <span className="font-medium text-lg">Soru {i + 1}</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         );
       })}
-    </div>
+    </motion.div>
   );
 
   const handleQuizCreate = async () => {
@@ -102,22 +122,24 @@ const AddQuestionsPage = () => {
       questions: questions,
       questionCount: questions.length,
       startDate: location.state?.startDate || new Date().toISOString(),
-      endDate: location.state?.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      isActive: true
+      endDate:
+        location.state?.endDate ||
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      isActive: true,
     };
 
     try {
       const response = await fetch("http://localhost:5050/api/create-quiz", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
       if (response.ok) {
-        navigate("/create-quiz"); // Quiz listesine yönlendir
+        navigate("/create-quiz");
       } else {
         alert("Quiz oluşturulamadı: " + result.message);
       }
@@ -128,52 +150,78 @@ const AddQuestionsPage = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex bg-gradient-to-br from-indigo-600 to-pink-500 text-white">
+    <motion.div
+      className="min-h-screen relative flex bg-gradient-to-br from-indigo-600 to-pink-500 text-white"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <Sidebar
         isCollapsed={isCollapsed}
         toggleSidebar={() => setIsCollapsed(!isCollapsed)}
       />
 
-      <div className="flex-1 p-8 overflow-y-auto pb-32">
-        <h1 className="text-3xl font-bold mb-8 text-center">Soru Listesi</h1>
+      <div className="md:ml-5 flex-1 p-8 overflow-y-auto pb-32">
+        <motion.h1
+          className="text-3xl font-bold mb-8 text-center"
+          initial={{ y: -30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          Soru Listesi
+        </motion.h1>
         <div className="w-full max-w-6xl mx-auto">{renderQuestionList()}</div>
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white text-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8">
-            <h2 className="text-2xl font-bold mb-6 text-center">
-              Soru {modalQuestionIndex + 1}
-            </h2>
-            <div className="flex flex-col gap-4">
-              <button
-                className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition"
-                onClick={() => {
-                  setShowQuestionForm(true);
-                  setShowModal(false);
-                }}
-              >
-                Yeni Soru Oluştur
-              </button>
-              <button
-                className="bg-pink-600 hover:bg-pink-700 text-white py-2 px-4 rounded-lg transition"
-                onClick={() => {
-                  setShowBankModal(true);
-                  setShowModal(false);
-                }}
-              >
-                Soru Bankasından Soru Seç
-              </button>
-              <button
-                className="mt-2 text-sm text-gray-500 hover:underline self-center"
-                onClick={handleCloseModal}
-              >
-                Vazgeç
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            key="modal"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white/40 backdrop-blur-md border border-white/30 text-white rounded-2xl shadow-2xl w-full max-w-md p-8"
+            >
+              <h2 className="text-2xl font-bold mb-6 text-center">
+                Soru {modalQuestionIndex + 1}
+              </h2>
+              <div className="flex flex-col gap-4">
+                <button
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition duration-300"
+                  onClick={() => {
+                    setShowQuestionForm(true);
+                    setShowModal(false);
+                  }}
+                >
+                  Yeni Soru Oluştur
+                </button>
+                <button
+                  className="bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300"
+                  onClick={() => {
+                    setShowBankModal(true);
+                    setShowModal(false);
+                  }}
+                >
+                  Soru Bankasından Soru Seç
+                </button>
+                <button
+                  className="mt-2 text-sm text-white hover:underline self-center"
+                  onClick={handleCloseModal}
+                >
+                  Vazgeç
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {showQuestionForm && (
         <QuestionFormModal
@@ -209,7 +257,12 @@ const AddQuestionsPage = () => {
         />
       )}
 
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+      <motion.div
+        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50"
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.5 }}
+      >
         <button
           onClick={handleQuizCreate}
           disabled={questions.filter((q) => q).length !== questionCount}
@@ -217,13 +270,13 @@ const AddQuestionsPage = () => {
             ${
               questions.filter((q) => q).length !== questionCount
                 ? "bg-gray-400 cursor-not-allowed text-white/70"
-                : "bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white"
+                : "bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white"
             }`}
         >
           Quiz Oluştur
         </button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

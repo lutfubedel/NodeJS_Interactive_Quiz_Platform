@@ -13,6 +13,7 @@ import {
   FaChartBar,
   FaSignOutAlt,
   FaPlayCircle,
+  FaBullseye,
   FaAngleDoubleLeft,
   FaClipboardList,
   FaAngleDoubleRight,
@@ -21,7 +22,7 @@ import {
 const menuItems = [
   { to: "/profile", icon: <FaUser />, label: "Profil" },
   { to: "/joinquiz", icon: <FaPlayCircle />, label: "Quize Katıl" },
-  { to: "/quiz-selection", icon: <FaPlayCircle />, label: "Quiz Başlat" },
+  { to: "/quiz-selection", icon: <FaBullseye />, label: "Quiz Başlat" },
   { to: "/create-quiz", icon: <FaPlus />, label: "Quiz Oluştur" },
   { to: "/quiz-history", icon: <FaHistory />, label: "Quiz Geçmişi" },
   { to: "/question-bank", icon: <FaQuestionCircle />, label: "Soru Bankası" },
@@ -34,7 +35,7 @@ function handleLogout(navigate) {
     const auth = getAuth();
     signOut(auth)
       .then(() => {
-        navigate("/home");   
+        navigate("/home");
       })
       .catch((error) => {
         console.error("Çıkış yapılamadı:", error);
@@ -65,7 +66,10 @@ export function DesktopSidebar({ isCollapsed, toggleSidebar }) {
       animate={isCollapsed ? "closed" : "open"}
       style={{ overflow: "hidden" }}
     >
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/30" style={{ minHeight: 40 }}>
+      <div
+        className="flex items-center justify-between px-3 py-2 border-b border-white/30"
+        style={{ minHeight: 40 }}
+      >
         <button
           onClick={toggleSidebar}
           aria-label={isCollapsed ? "Menüyü aç" : "Menüyü kapat"}
@@ -74,7 +78,10 @@ export function DesktopSidebar({ isCollapsed, toggleSidebar }) {
           {isCollapsed ? <FaAngleDoubleRight /> : <FaAngleDoubleLeft />}
         </button>
         {!isCollapsed && (
-          <span className="font-bold text-lg select-none" style={{ userSelect: "none", lineHeight: "1" }}>
+          <span
+            className="font-bold text-lg select-none"
+            style={{ userSelect: "none", lineHeight: "1" }}
+          >
             Menü
           </span>
         )}
@@ -88,10 +95,16 @@ export function DesktopSidebar({ isCollapsed, toggleSidebar }) {
             to={to}
             className={`relative flex items-center cursor-pointer rounded-xl transition-colors 
               hover:bg-white hover:text-indigo-600
-              ${isCollapsed ? "justify-center p-3 w-10 h-10 mx-auto" : "p-3 pl-6 w-auto"}`}
+              ${
+                isCollapsed
+                  ? "justify-center p-3 w-10 h-10 mx-auto"
+                  : "p-3 pl-6 w-auto"
+              }`}
             style={{ height: 48 }}
           >
-            <div className="flex justify-center items-center w-6 h-6 flex-shrink-0">{icon}</div>
+            <div className="flex justify-center items-center w-6 h-6 flex-shrink-0">
+              {icon}
+            </div>
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span
@@ -113,7 +126,11 @@ export function DesktopSidebar({ isCollapsed, toggleSidebar }) {
           onClick={() => handleLogout(navigate)}
           className={`relative flex items-center cursor-pointer rounded-xl transition-colors 
             hover:bg-white hover:text-indigo-600 text-white
-            ${isCollapsed ? "justify-center p-3 w-10 h-10 mx-auto" : "p-3 pl-6 w-auto"}`}
+            ${
+              isCollapsed
+                ? "justify-center p-3 w-10 h-10 mx-auto"
+                : "p-3 pl-6 w-auto"
+            }`}
           style={{ height: 48 }}
         >
           <div className="flex justify-center items-center w-6 h-6 flex-shrink-0">
@@ -186,7 +203,9 @@ export function MobileSidebar({ isOpen, toggleSidebar }) {
                   <div className="flex justify-center items-center w-6 h-6 mr-4 text-indigo-600">
                     {icon}
                   </div>
-                  <span className="whitespace-nowrap overflow-hidden">{label}</span>
+                  <span className="whitespace-nowrap overflow-hidden">
+                    {label}
+                  </span>
                 </Link>
               ))}
 
@@ -201,7 +220,9 @@ export function MobileSidebar({ isOpen, toggleSidebar }) {
                 <div className="flex justify-center items-center w-6 h-6 mr-4 text-indigo-600">
                   <FaSignOutAlt />
                 </div>
-                <span className="whitespace-nowrap overflow-hidden">Çıkış Yap</span>
+                <span className="whitespace-nowrap overflow-hidden">
+                  Çıkış Yap
+                </span>
               </button>
             </nav>
           </motion.nav>
@@ -230,6 +251,9 @@ export default function Sidebar() {
   return isMobile ? (
     <MobileSidebar isOpen={mobileOpen} toggleSidebar={toggleMobileSidebar} />
   ) : (
-    <DesktopSidebar isCollapsed={isCollapsed} toggleSidebar={toggleDesktopSidebar} />
+    <DesktopSidebar
+      isCollapsed={isCollapsed}
+      toggleSidebar={toggleDesktopSidebar}
+    />
   );
 }
