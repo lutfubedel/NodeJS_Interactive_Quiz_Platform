@@ -22,6 +22,8 @@ import AddQuestionsPage from "./pages/Quiz Pages/addQuestionPage";
 import QuizSelectionPage from "./pages/SelectQuiz";
 import StartQuizPage from "./pages/StartQuiz";
 import QuizRoom from "./pages/QuizRoom";
+import LiveQuiz from "./pages/LiveQuiz";
+
 
 function App() {
   return (
@@ -39,6 +41,7 @@ function App() {
           <Route path="/quiz-selection" element={<QuizSelectionPage />} />
           <Route path="/start-quiz/:quizId" element={<StartQuizPage />} />
           <Route path="/quiz-room/:roomCode" element={<QuizRoom />} />
+          <Route path="/live-quiz/:roomCode" element={<LiveQuiz />} />
 
           <Route
             path="/quiz-history/created-quizzes"

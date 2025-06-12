@@ -134,7 +134,7 @@ const startQuizFlow = async (roomCode) => {
   const askNextQuestion = () => {
     if (currentIndex >= questions.length) {
       io.to(roomCode).emit("quiz-finished");
-      saveResultsToDatabase(rooms[roomCode]); // tüm cevapları kaydet
+    //  saveResultsToDatabase(rooms[roomCode]); // tüm cevapları kaydet
       return;
     }
 
