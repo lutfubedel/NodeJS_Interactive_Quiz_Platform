@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
-import { Link } from "react-router-dom";
+import { getAuth, signOut } from "firebase/auth";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaUser,
   FaBars,
@@ -10,7 +11,6 @@ import {
   FaCog,
   FaHistory,
   FaChartBar,
-  FaPalette,
   FaSignOutAlt,
   FaPlayCircle,
   FaAngleDoubleLeft,
@@ -26,11 +26,26 @@ const menuItems = [
   { to: "/quiz-history", icon: <FaHistory />, label: "Quiz Geçmişi" },
   { to: "/question-bank", icon: <FaQuestionCircle />, label: "Soru Bankası" },
   { to: "/statistics", icon: <FaChartBar />, label: "İstatistikler" },
-  { to: "/settings", icon: <FaCog />, label: "Ayarlar" },
-  { to: "/logout", icon: <FaSignOutAlt />, label: "Çıkış Yap" },
 ];
 
+// Logout fonksiyonu
+function handleLogout(navigate) {
+  if (window.confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        navigate("/home");   
+      })
+      .catch((error) => {
+        console.error("Çıkış yapılamadı:", error);
+        alert("Çıkış sırasında bir hata oluştu.");
+      });
+  }
+}
+
 export function DesktopSidebar({ isCollapsed, toggleSidebar }) {
+  const navigate = useNavigate();
+
   const sidebarVariants = {
     open: {
       width: 260,
@@ -50,10 +65,7 @@ export function DesktopSidebar({ isCollapsed, toggleSidebar }) {
       animate={isCollapsed ? "closed" : "open"}
       style={{ overflow: "hidden" }}
     >
-      <div
-        className="flex items-center justify-between px-3 py-2 border-b border-white/30"
-        style={{ minHeight: 40 }}
-      >
+      <div className="flex items-center justify-between px-3 py-2 border-b border-white/30" style={{ minHeight: 40 }}>
         <button
           onClick={toggleSidebar}
           aria-label={isCollapsed ? "Menüyü aç" : "Menüyü kapat"}
@@ -62,10 +74,7 @@ export function DesktopSidebar({ isCollapsed, toggleSidebar }) {
           {isCollapsed ? <FaAngleDoubleRight /> : <FaAngleDoubleLeft />}
         </button>
         {!isCollapsed && (
-          <span
-            className="font-bold text-lg select-none"
-            style={{ userSelect: "none", lineHeight: "1" }}
-          >
+          <span className="font-bold text-lg select-none" style={{ userSelect: "none", lineHeight: "1" }}>
             Menü
           </span>
         )}
@@ -79,18 +88,10 @@ export function DesktopSidebar({ isCollapsed, toggleSidebar }) {
             to={to}
             className={`relative flex items-center cursor-pointer rounded-xl transition-colors 
               hover:bg-white hover:text-indigo-600
-              ${
-                isCollapsed
-                  ? "justify-center p-3 w-10 h-10 mx-auto"
-                  : "p-3 pl-6 w-auto"
-              }
-            `}
+              ${isCollapsed ? "justify-center p-3 w-10 h-10 mx-auto" : "p-3 pl-6 w-auto"}`}
             style={{ height: 48 }}
           >
-            <div className="flex justify-center items-center w-6 h-6 flex-shrink-0">
-              {icon}
-            </div>
-
+            <div className="flex justify-center items-center w-6 h-6 flex-shrink-0">{icon}</div>
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span
@@ -106,15 +107,42 @@ export function DesktopSidebar({ isCollapsed, toggleSidebar }) {
             </AnimatePresence>
           </Link>
         ))}
+
+        {/* 🚪 Logout butonu ayrı */}
+        <button
+          onClick={() => handleLogout(navigate)}
+          className={`relative flex items-center cursor-pointer rounded-xl transition-colors 
+            hover:bg-white hover:text-indigo-600 text-white
+            ${isCollapsed ? "justify-center p-3 w-10 h-10 mx-auto" : "p-3 pl-6 w-auto"}`}
+          style={{ height: 48 }}
+        >
+          <div className="flex justify-center items-center w-6 h-6 flex-shrink-0">
+            <FaSignOutAlt />
+          </div>
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="ml-4 whitespace-nowrap overflow-hidden select-none"
+              >
+                Çıkış Yap
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
       </nav>
     </motion.div>
   );
 }
 
 export function MobileSidebar({ isOpen, toggleSidebar }) {
+  const navigate = useNavigate();
+
   return (
     <>
-      {/* Hamburger button sadece kapalıyken göster */}
       {!isOpen && (
         <button
           onClick={toggleSidebar}
@@ -136,7 +164,6 @@ export function MobileSidebar({ isOpen, toggleSidebar }) {
           >
             <div className="flex items-center justify-between px-3 py-4 border-b border-white/30">
               <span className="font-bold text-lg">Menü</span>
-              {/* Kapatma butonu */}
               <button
                 onClick={toggleSidebar}
                 aria-label="Menüyü kapat"
@@ -152,18 +179,30 @@ export function MobileSidebar({ isOpen, toggleSidebar }) {
                   key={i}
                   to={to}
                   className="flex items-center justify-start p-3 rounded-lg cursor-pointer w-full flex-grow
-                 bg-white text-indigo-600 border border-gray-300
-                 hover:bg-indigo-100 hover:text-indigo-800 transition-colors"
+                    bg-white text-indigo-600 border border-gray-300
+                    hover:bg-indigo-100 hover:text-indigo-800 transition-colors"
                   style={{ minHeight: 48 }}
                 >
                   <div className="flex justify-center items-center w-6 h-6 mr-4 text-indigo-600">
                     {icon}
                   </div>
-                  <span className="whitespace-nowrap overflow-hidden">
-                    {label}
-                  </span>
+                  <span className="whitespace-nowrap overflow-hidden">{label}</span>
                 </Link>
               ))}
+
+              {/* 🚪 Logout butonu ayrı */}
+              <button
+                onClick={() => handleLogout(navigate)}
+                className="flex items-center justify-start p-3 rounded-lg cursor-pointer w-full
+                  bg-white text-indigo-600 border border-gray-300
+                  hover:bg-indigo-100 hover:text-indigo-800 transition-colors"
+                style={{ minHeight: 48 }}
+              >
+                <div className="flex justify-center items-center w-6 h-6 mr-4 text-indigo-600">
+                  <FaSignOutAlt />
+                </div>
+                <span className="whitespace-nowrap overflow-hidden">Çıkış Yap</span>
+              </button>
             </nav>
           </motion.nav>
         )}
@@ -174,8 +213,8 @@ export function MobileSidebar({ isOpen, toggleSidebar }) {
 
 export default function Sidebar() {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
-  const [isCollapsed, setIsCollapsed] = React.useState(false); // desktop için
-  const [mobileOpen, setMobileOpen] = React.useState(false); // mobil için
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -191,9 +230,6 @@ export default function Sidebar() {
   return isMobile ? (
     <MobileSidebar isOpen={mobileOpen} toggleSidebar={toggleMobileSidebar} />
   ) : (
-    <DesktopSidebar
-      isCollapsed={isCollapsed}
-      toggleSidebar={toggleDesktopSidebar}
-    />
+    <DesktopSidebar isCollapsed={isCollapsed} toggleSidebar={toggleDesktopSidebar} />
   );
 }
