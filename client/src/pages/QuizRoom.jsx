@@ -1,49 +1,54 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import socket from "../socket";
+import { useAuth } from "../context/AuthContext";
 
-const QuizRoom = ({ userData, isHost }) => {
+const QuizRoom = ({ isHost }) => {
   const { roomCode } = useParams();
   const navigate = useNavigate();
-
+  const { userData } = useAuth(); // Sadece buradan geliyor artık
   const [participants, setParticipants] = useState([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const socket = io("http://localhost:5050");
 
-    if (isHost) {
-      socket.emit("host-join-room", { roomCode, hostName: userData?.name || "Host" });
-    } else {
-      socket.emit("join-room", { roomCode, participant: { name: userData?.name || "Misafir" } });
-    }
 
-    socket.on("update-participants", (list) => {
+  if (isHost) return; // Host zaten StartQuiz'te katıldı
+  socket.emit("join-room", {
+    roomCode,
+    participant: { name: userData?.name || "Misafir" },
+  });
+    const handleUpdateParticipants = (list) => {
       setParticipants(list);
-    });
+    };
 
-    socket.on("user-joined", (user) => {
+    const handleUserJoined = (user) => {
       console.log("Yeni katılımcı geldi:", user.name);
-      // İstersen burada bildirim gösterebilirsin
-    });
+    };
 
-    socket.on("error", (data) => {
-      setError(data.message || "Bilinmeyen bir hata oluştu.");
-    });
-
-    socket.on("quiz-started", () => {
+    const handleQuizStarted = () => {
       navigate(`/live-quiz/${roomCode}`);
-    });
+    };
+
+    const handleError = (data) => {
+      setError(data.message || "Bilinmeyen bir hata oluştu.");
+    };
+
+    socket.on("update-participants", handleUpdateParticipants);
+    socket.on("user-joined", handleUserJoined);
+    socket.on("quiz-started", handleQuizStarted);
+    socket.on("error", handleError);
 
     return () => {
-      socket.disconnect();
+      socket.off("update-participants", handleUpdateParticipants);
+      socket.off("user-joined", handleUserJoined);
+      socket.off("quiz-started", handleQuizStarted);
+      socket.off("error", handleError);
     };
   }, [roomCode, isHost, userData, navigate]);
 
   const startQuiz = () => {
-    const socket = io("http://localhost:5050");
     socket.emit("start-quiz", { roomCode });
-    socket.disconnect();
   };
 
   if (error) {
@@ -51,7 +56,7 @@ const QuizRoom = ({ userData, isHost }) => {
       <div className="text-red-600 text-center mt-10">
         Hata: {error}
         <br />
-        <button onClick={() => navigate("/join-quiz")} className="mt-4 underline">
+        <button onClick={() => navigate("/joinquiz")} className="mt-4 underline">
           Tekrar dene
         </button>
       </div>

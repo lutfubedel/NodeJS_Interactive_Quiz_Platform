@@ -8,37 +8,38 @@ const generateRoomCode = () => {
 };
 
 const StartQuiz = () => {
-  const { quizId } = useParams();
-  const { userData } = useAuth();
-  const [roomCode, setRoomCode] = useState("");
-  const [participants, setParticipants] = useState([]);
+    const { quizId } = useParams();
+    const { userData } = useAuth();
+    const [roomCode, setRoomCode] = useState("");
+    const [participants, setParticipants] = useState([]);
 
-  useEffect(() => {
+useEffect(() => {
     const newCode = generateRoomCode();
     setRoomCode(newCode);
 
+    const hostName = userData.name;
 
-    const hostName = userData.name
+    socket.emit("host-join-room", {
+        roomCode: newCode,
+        hostName,
+        quizId, // bunu da gönder
+    });
 
-    // Oda oluşturma isteği
-    socket.emit("host-join-room", { roomCode: newCode, hostName });
-
-    // Katılımcı listesini dinle
     const handleUpdate = (users) => {
-      setParticipants(users);
+        setParticipants(users);
     };
 
     socket.on("update-participants", handleUpdate);
 
-    // Cleanup
     return () => {
-      socket.off("update-participants", handleUpdate);
+        socket.off("update-participants", handleUpdate);
     };
-  }, [quizId]);
+    }, [quizId]);
 
   const handleStartQuiz = () => {
+    console.log("Quiz başlatılıyor:", roomCode);
     socket.emit("start-quiz", { roomCode });
-  };
+};
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-600 text-white px-4">

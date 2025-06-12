@@ -25,16 +25,7 @@ import QuizRoomPage from "./pages/QuizRoom";
 
 function App() {
 
-  useEffect(() => {
-    // Uygulama yüklenince socket bağlanır
-    if (!socket.connected) {
-      socket.connect();
-    }
 
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
 
   return (
     <Router>

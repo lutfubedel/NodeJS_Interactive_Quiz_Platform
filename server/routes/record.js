@@ -26,6 +26,8 @@ async function connectToMongo() {
   return db;
 }
 
+export { connectToMongo };
+
 // Bugunun tarihini "31/05/2025" formatında verir.
 function getFormattedDate() {
   const now = new Date();
@@ -341,7 +343,33 @@ router.post('/list-quizzes', async (req, res) => {
   }
 });
 
+// quizId ile quizin sorularını getiren route
+router.post('/get-quiz-questions', async (req, res) => {
+  const { quizId } = req.body;
 
+  if (!quizId) {
+    return res.status(400).json({ message: "'quizId' alanı gereklidir." });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const quizzes = db.collection('quizes');
+
+    const quiz = await quizzes.findOne({ quizId });
+
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz bulunamadı." });
+    }
+
+    res.status(200).json({
+      message: "Quiz soruları başarıyla getirildi.",
+      questions: quiz.questions || []
+    });
+  } catch (err) {
+    console.error('Quiz soruları getirilirken hata:', err);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
 
 
 
