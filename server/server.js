@@ -44,50 +44,69 @@ io.on("connection", (socket) => {
   console.log("Yeni istemci bağlandı:", socket.id);
   socket.emit("connected", { message: "Socket.IO bağlantısı başarılı!" });
 
-  socket.on("host-join-room", ({ roomCode, hostName }) => {
-    if (!roomCode || !hostName) {
-      socket.emit("error", { message: "Oda kodu ve host adı gereklidir." });
-      return;
-    }
-    socket.join(roomCode);
-    rooms[roomCode] = [{ socketId: socket.id, name: hostName, isHost: true }];
+socket.on("host-join-room", ({ roomCode, hostName }) => {
+  if (!roomCode || !hostName) {
+    socket.emit("error", { message: "Oda kodu ve host adı gereklidir." });
+    return;
+  }
 
-    console.log(`Host oda oluşturdu: ${roomCode} (${hostName})`);
-    io.to(roomCode).emit("update-participants", rooms[roomCode]);
+  socket.join(roomCode);
+
+  // Odayı başlat, varsa üzerine yazma
+  if (!rooms[roomCode]) {
+    rooms[roomCode] = [];
+  }
+
+  // Host'u katılımcı listesine isHost: true ile ekle
+  rooms[roomCode].push({
+    socketId: socket.id,
+    name: hostName,
+    isHost: true,
   });
+
+  console.log(`Host oda oluşturdu: ${roomCode} (${hostName})`);
+
+  // Sadece isHost: false olan katılımcıları gönder
+  const participants = rooms[roomCode].filter(p => !p.isHost);
+  io.to(roomCode).emit("update-participants", participants);
+});
 
   // **Buraya bu join-room event'ini ekle:**
-  socket.on("join-room", ({ roomCode, participant }) => {
-    const participantName = participant?.name;
-    if (!roomCode || !participantName) {
-      socket.emit("error", { message: "Oda kodu ve katılımcı adı gereklidir." });
-      return;
-    }
-    if (!rooms[roomCode]) {
-      socket.emit("error", { message: "Geçersiz oda kodu." });
-      return;
-    }
+socket.on("join-room", ({ roomCode, participant }) => {
+  const participantName = participant?.name;
 
-    socket.join(roomCode);
-    rooms[roomCode].push({ socketId: socket.id, name: participantName, isHost: false });
+  if (!roomCode || !participantName) {
+    socket.emit("error", { message: "Oda kodu ve katılımcı adı gereklidir." });
+    return;
+  }
 
-    console.log(`Katılımcı katıldı: ${participantName} -> ${roomCode}`);
+  if (!rooms[roomCode]) {
+    socket.emit("error", { message: "Geçersiz oda kodu." });
+    return;
+  }
 
-    // Yeni katılan kişiyi yayınla:
-    io.to(roomCode).emit("user-joined", { name: participantName, socketId: socket.id });
+  socket.join(roomCode);
 
-    // Güncel katılımcı listesini güncelle
-    io.to(roomCode).emit("update-participants", rooms[roomCode]);
+  // Katılımcıyı odaya isHost: false olarak ekle
+  rooms[roomCode].push({
+    socketId: socket.id,
+    name: participantName,
+    isHost: false,
   });
 
-  socket.on("start-quiz", ({ roomCode }) => {
-    if (!roomCode || !rooms[roomCode]) {
-      socket.emit("error", { message: "Geçersiz oda kodu." });
-      return;
-    }
-    console.log(`Quiz başlatıldı: ${roomCode}`);
-    io.to(roomCode).emit("quiz-started");
+  console.log(`Katılımcı katıldı: ${participantName} -> ${roomCode}`);
+
+  // Yeni katılan kişiyi yayınla (opsiyonel)
+  io.to(roomCode).emit("user-joined", {
+    name: participantName,
+    socketId: socket.id,
   });
+
+  // Sadece isHost: false olanları yayınla
+  const participants = rooms[roomCode].filter(p => !p.isHost);
+  io.to(roomCode).emit("update-participants", participants);
+});
+
 
   socket.on("disconnect", () => {
     console.log("İstemci ayrıldı:", socket.id);

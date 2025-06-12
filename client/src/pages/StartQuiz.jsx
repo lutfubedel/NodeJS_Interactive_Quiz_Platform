@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { io } from "socket.io-client";
-
-const socket = io("http://localhost:5050"); // Gerekirse .env ile taşı
+import socket from "../socket"; // Merkezî socket dosyasını kullan
+import { useAuth } from "../context/AuthContext";
 
 const generateRoomCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -10,6 +9,7 @@ const generateRoomCode = () => {
 
 const StartQuiz = () => {
   const { quizId } = useParams();
+  const { userData } = useAuth();
   const [roomCode, setRoomCode] = useState("");
   const [participants, setParticipants] = useState([]);
 
@@ -17,20 +17,22 @@ const StartQuiz = () => {
     const newCode = generateRoomCode();
     setRoomCode(newCode);
 
-    // Host adı örnek olarak "HostUser", bunu gerçek kullanıcı adıyla değiştir
-    const hostName = "HostUser";
 
-    // Host oda oluşturuyor
+    const hostName = userData.name
+
+    // Oda oluşturma isteği
     socket.emit("host-join-room", { roomCode: newCode, hostName });
 
-    // Katılımcı listesi güncellendiğinde al
-    socket.on("update-participants", (users) => {
+    // Katılımcı listesini dinle
+    const handleUpdate = (users) => {
       setParticipants(users);
-    });
+    };
 
-    // Cleanup - event listenerları kaldır, bağlantıyı kapatma
+    socket.on("update-participants", handleUpdate);
+
+    // Cleanup
     return () => {
-      socket.off("update-participants");
+      socket.off("update-participants", handleUpdate);
     };
   }, [quizId]);
 

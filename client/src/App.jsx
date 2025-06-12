@@ -1,4 +1,6 @@
 import "./App.css";
+import { useEffect } from "react";
+import socket from "./socket"; 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./auth/signin";
 import Login from "./auth/login";
@@ -22,6 +24,18 @@ import StartQuizPage from "./pages/StartQuiz";
 import QuizRoomPage from "./pages/QuizRoom";
 
 function App() {
+
+  useEffect(() => {
+    // Uygulama yüklenince socket bağlanır
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   return (
     <Router>
       <AuthProvider>
