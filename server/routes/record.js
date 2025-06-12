@@ -371,7 +371,23 @@ router.post('/get-quiz-questions', async (req, res) => {
   }
 });
 
+async function getQuizQuestions(quizId) {
+  if (!quizId) throw new Error("quizId gereklidir");
 
+  const db = await connectToMongo();
+  const quizzes = db.collection('quizes');
 
+  // quizId ile quizi bul
+  const quiz = await quizzes.findOne({ quizId: quizId });
+
+  if (!quiz) {
+    throw new Error("Quiz bulunamadı");
+  }
+
+  // quiz.questions varsa döndür, yoksa boş dizi
+  return quiz.questions || [];
+}
+
+export { getQuizQuestions };
 
 export default router;
