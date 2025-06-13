@@ -86,6 +86,41 @@ router.post('/find-user', async (req, res) => {
   }
 });
 
+// Kullanıcı bilgilerini güncelleyen router
+router.post("/update-user", async (req, res) => {
+  const { userId, name, surname, birthdate ,avatar_url} = req.body;
+
+  if (!userId || !name || !surname || !avatar_url) {
+    return res.status(400).json({ message: "Eksik veri gönderildi." });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const usersCollection = db.collection("users");
+
+    const result = await usersCollection.updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $set: {
+          name,
+          surname,
+          birthdate,
+          avatar_url
+        },
+      }
+    );
+
+    if (result.modifiedCount === 1) {
+      res.status(200).json({ message: "Kullanıcı başarıyla güncellendi." });
+    } else {
+      res.status(404).json({ message: "Kullanıcı bulunamadı veya veri değişmedi." });
+    }
+  } catch (err) {
+    console.error("update-user hatası:", err.message);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
 // Soru bankası oluşturma route'u
 router.post('/create-questionBank', async (req, res) => {
   const { uid, title, subtitle , creator} = req.body;
@@ -318,7 +353,6 @@ router.post('/create-quiz', async (req, res) => {
   }
 });
 
-
 // Belirli bir kullanıcıya ait quizleri listeleme (body ile)
 router.post('/list-quizzes', async (req, res) => {
   const { createdBy } = req.body;
@@ -370,6 +404,11 @@ router.post('/get-quiz-questions', async (req, res) => {
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
+
+
+
+
+
 
 async function getQuizQuestions(quizId) {
   if (!quizId) throw new Error("quizId gereklidir");
