@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { FiEdit2 } from "react-icons/fi";
 
 const EditQuestionModal = ({ question, onClose, onSave }) => {
   const { bankId } = useParams();
@@ -17,6 +18,7 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
   });
 
   const [isClosing, setIsClosing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleChange = (index, value) => {
     const updatedOptions = [...editedQuestion.options];
@@ -29,6 +31,42 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
     setTimeout(() => {
       onClose();
     }, 300);
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+
+    // Eğer boş dosya seçildiyse (iptal edilirse) sadece görseli kaldır
+    if (!file) {
+      setEditedQuestion((prev) => ({ ...prev, image: "" }));
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      alert("Lütfen yalnızca PNG veya JPG dosyası yükleyin.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setIsUploading(true);
+    try {
+      const res = await fetch("http://localhost:5050/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      setEditedQuestion((prev) => ({
+        ...prev,
+        image: data.url,
+      }));
+    } catch (error) {
+      console.error("Görsel yüklenemedi:", error);
+      alert("Görsel yükleme hatası.");
+    }
+    setIsUploading(false);
   };
 
   const handleSave = async () => {
@@ -70,14 +108,58 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
           >
             <h2 className="text-xl font-bold text-center">Soru Düzenle</h2>
 
-            {/* Görsel placeholder */}
-            <div className="w-full bg-white/40 text-gray-800 p-3 rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-white/60 h-20 cursor-not-allowed">
-              <p className="text-sm text-gray-700 font-medium">
-                Görsel buraya yüklenecek
-              </p>
-              <p className="text-xs text-gray-600">
-                (.png, .jpg desteklenecek)
-              </p>
+            {/* Görsel alanı */}
+            <div className="mb-2">
+              <label className="block font-semibold text-white mb-1">
+                Soru Görseli (.png, .jpg)
+              </label>
+
+              {!editedQuestion.image ? (
+                <label
+                  htmlFor="file-upload"
+                  className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-white/40 rounded-lg cursor-pointer bg-white/10 hover:bg-white/20 transition text-white/70"
+                >
+                  {isUploading ? (
+                    <span>Yükleniyor...</span>
+                  ) : (
+                    <>
+                      <span>Görsel yüklemek için tıklayın</span>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        className="hidden"
+                        onChange={handleImageChange}
+                      />
+                    </>
+                  )}
+                </label>
+              ) : (
+                <div className="relative">
+                  <img
+                    src={editedQuestion.image}
+                    alt="Yüklenen görsel"
+                    className="w-full max-h-48 object-contain rounded-md border border-white/30"
+                  />
+
+                  {/* Sağ alt: değiştir */}
+                  <label
+                    htmlFor="file-upload-replace"
+                    className="absolute bottom-2 right-2 bg-white/80 text-indigo-600 hover:bg-indigo-600 hover:text-white transition p-2 rounded-full shadow cursor-pointer"
+                    title="Görseli değiştir"
+                  >
+                    <FiEdit2 className="w-5 h-5" />
+                  </label>
+
+                  <input
+                    id="file-upload-replace"
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Soru metni */}
