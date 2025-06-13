@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import socket from "../socket";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +10,7 @@ const generateRoomCode = () => {
 
 const StartQuiz = () => {
   const { quizId } = useParams();
+  const navigate = useNavigate(); // Yönlendirme için
   const { userData } = useAuth();
   const [roomCode, setRoomCode] = useState("");
   const [participants, setParticipants] = useState([]);
@@ -35,11 +36,12 @@ const StartQuiz = () => {
     return () => {
       socket.off("update-participants", handleUpdate);
     };
-  }, [quizId]);
+  }, [quizId, userData.name]);
 
   const handleStartQuiz = () => {
     console.log("Quiz başlatılıyor:", roomCode);
     socket.emit("start-quiz", { roomCode });
+    navigate(`/host/${roomCode}`); // HostWaitRoom'a yönlendir
   };
 
   return (

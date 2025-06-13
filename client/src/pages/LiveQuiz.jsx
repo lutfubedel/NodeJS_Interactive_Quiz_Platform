@@ -1,58 +1,60 @@
 import React, { useEffect, useState, useRef } from "react";
-import socket from "../socket"; // merkezi socket bağlantın
-import { useParams } from "react-router-dom";
+import socket from "../socket";
+import { useParams, useNavigate } from "react-router-dom";
 
 const LiveQuiz = () => {
-  const { roomCode } = useParams(); // URL'den roomCode alınır
+  const { roomCode } = useParams();
+  const navigate = useNavigate(); // yönlendirme için
   const [quizStarted, setQuizStarted] = useState(false);
   const [question, setQuestion] = useState(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [selectedOption, setSelectedOption] = useState(null);
-  const [quizFinished, setQuizFinished] = useState(false);
-
   const timerRef = useRef(null);
 
-  // Sayaç işleyicisi
+  useEffect(() => {
+    socket.on("quiz-starting", ({ countdown }) => {
+      console.log(`Quiz ${countdown} saniye içinde başlayacak.`);
+      setQuizStarted(false);
+    });
+
+    socket.on("quiz-started", () => {
+      setQuizStarted(true);
+    });
+
+    socket.on("new-question", ({ index, question, timeLimit }) => {
+      setQuestion(question);
+      setQuestionIndex(index);
+      setTimeLeft(timeLimit);
+      setSelectedOption(null);
+    });
+
+    socket.on("quiz-finished", () => {
+      navigate(`/results/${roomCode}`);
+
+    });
+
+    return () => {
+      socket.off("quiz-starting");
+      socket.off("quiz-started");
+      socket.off("new-question");
+      socket.off("quiz-finished");
+    };
+  }, [navigate]);
+
   useEffect(() => {
     if (timeLeft === 0 && question) {
-      submitAnswer(); // zaman dolunca cevap gönder
+      submitAnswer();
     }
 
     if (timeLeft > 0 && question) {
       timerRef.current = setTimeout(() => {
-        setTimeLeft(prev => prev - 1);
+        setTimeLeft((prev) => prev - 1);
       }, 1000);
     }
 
     return () => clearTimeout(timerRef.current);
   }, [timeLeft, question]);
-
-  useEffect(() => {
-    socket.on("quiz-started", () => {
-      console.log("Quiz başladı");
-      setQuizStarted(true);
-    });
-
-    socket.on("new-question", ({ index, question, timeLimit }) => {
-      console.log("Yeni soru:", question);
-      setQuestion(question);
-      setQuestionIndex(index);
-      setTimeLeft(timeLimit);
-      setSelectedOption(null); // önceki seçimi temizle
-    });
-
-    socket.on("quiz-finished", () => {
-      console.log("Quiz bitti");
-      setQuizFinished(true);
-    });
-
-    return () => {
-      socket.off("quiz-started");
-      socket.off("new-question");
-      socket.off("quiz-finished");
-    };
-  }, []);
 
   const submitAnswer = () => {
     socket.emit("submit-answer", {
@@ -63,12 +65,8 @@ const LiveQuiz = () => {
     console.log("Cevap gönderildi:", selectedOption);
   };
 
-  if (quizFinished) {
-    return <div className="quiz-finished">Quiz bitti! Teşekkürler.</div>;
-  }
-
   if (!quizStarted) {
-    return <div className="waiting">Quiz'in başlaması bekleniyor...</div>;
+    return <div className="waiting">Quiz’in başlaması bekleniyor...</div>;
   }
 
   if (!question) {
@@ -78,7 +76,15 @@ const LiveQuiz = () => {
   return (
     <div className="live-quiz">
       <h2>Soru {questionIndex}</h2>
-      <p>{question.text}</p>
+      <p>{question.question}</p>
+
+      {question.image && (
+        <img
+          src={question.image}
+          alt="Soru görseli"
+          style={{ maxWidth: "300px", marginBottom: "1rem" }}
+        />
+      )}
 
       <ul>
         {question.options.map((option, i) => (
@@ -87,7 +93,11 @@ const LiveQuiz = () => {
             onClick={() => setSelectedOption(option)}
             style={{
               cursor: "pointer",
-              backgroundColor: selectedOption === option ? "#ddd" : "#fff",
+              backgroundColor: selectedOption === option ? "#cce5ff" : "#fff",
+              padding: "8px",
+              margin: "4px 0",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
             }}
           >
             {option}
@@ -96,7 +106,6 @@ const LiveQuiz = () => {
       </ul>
 
       <p>Kalan süre: {timeLeft} saniye</p>
-      {!selectedOption && <p>Bir seçenek seçin...</p>}
     </div>
   );
 };

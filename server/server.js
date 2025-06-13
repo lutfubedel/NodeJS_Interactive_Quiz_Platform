@@ -123,35 +123,51 @@ socket.on("start-quiz", ({ roomCode }) => {
 });
 
 
-
 const startQuizFlow = async (roomCode) => {
   const quizId = rooms[roomCode].quizId;
-  const questions = await getQuizQuestions(quizId); // Quiz sorularını al
-  console.log(`Quiz soruları alındı:`, questions);
+  const questions = await getQuizQuestions(quizId);
 
-  let currentIndex = 0;
+  if (!questions || questions.length === 0) {
+    io.to(roomCode).emit("quiz-finished");
+    return;
+  }
 
-  const askNextQuestion = () => {
-    if (currentIndex >= questions.length) {
-      io.to(roomCode).emit("quiz-finished");
-    //  saveResultsToDatabase(rooms[roomCode]); // tüm cevapları kaydet
-      return;
-    }
+  rooms[roomCode].currentQuestionIndex = 0;
+  rooms[roomCode].questions = questions;
 
-    const currentQuestion = questions[currentIndex];
-    io.to(roomCode).emit("new-question", {
-      index: currentIndex + 1,
-      question: currentQuestion,
-      timeLimit: 30,
-    });
+  // 1. Önce quiz başlayacak diye haber verelim
+  io.to(roomCode).emit("quiz-starting", { countdown: 10 });
+  console.log(`Quiz ${roomCode} odasında 10 saniye sonra başlayacak.`);
 
-    setTimeout(() => {
-      currentIndex++;
-      askNextQuestion();
-    }, 30000);
-  };
+  setTimeout(() => {
+    io.to(roomCode).emit("quiz-started"); // Tetikleyici sinyal
+    console.log(`Quiz ${roomCode} odasında başladı.`);
 
-  askNextQuestion();
+    askNextQuestion(roomCode); // Soruları başlat
+  }, 10000);
+};
+
+const askNextQuestion = (roomCode) => {
+  const questions = rooms[roomCode].questions;
+  const index = rooms[roomCode].currentQuestionIndex;
+
+  if (index >= questions.length) {
+    io.to(roomCode).emit("quiz-finished");
+    return;
+  }
+
+  const currentQuestion = questions[index];
+
+  io.to(roomCode).emit("new-question", {
+    index: index + 1,
+    question: currentQuestion,
+    timeLimit: 10,
+  });
+
+  setTimeout(() => {
+    rooms[roomCode].currentQuestionIndex++;
+    askNextQuestion(roomCode);
+  }, 10000);
 };
 
 

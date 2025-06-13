@@ -23,7 +23,8 @@ import QuizSelectionPage from "./pages/SelectQuiz";
 import StartQuizPage from "./pages/StartQuiz";
 import QuizRoom from "./pages/QuizRoom";
 import LiveQuiz from "./pages/LiveQuiz";
-
+import HostWaitRoom from "./pages/HostWaitRoom";
+import Results from "./pages/Results";
 
 function App() {
   return (
@@ -42,6 +43,8 @@ function App() {
           <Route path="/start-quiz/:quizId" element={<StartQuizPage />} />
           <Route path="/quiz-room/:roomCode" element={<QuizRoom />} />
           <Route path="/live-quiz/:roomCode" element={<LiveQuiz />} />
+          <Route path="/host/:roomCode" element={<HostWaitRoom />} />
+          <Route path="/results/:roomCode" element={<Results />} />
 
           <Route
             path="/quiz-history/created-quizzes"
