@@ -196,11 +196,77 @@ io.on("connection", (socket) => {
       console.log(`- ${p.name} (Host: ${p.isHost}): Answers =`, p.answers || []);
     });
 
+    // Her cevaptan sonra skorları hesapla ve host'a gönder
+    const participants = rooms[roomCode].participants;
+    const questions = rooms[roomCode].questions || [];
+    const scores = calculateScores(participants, questions);
+
+    console.log(`Oda ${roomCode} skorları:`, scores);
+    io.to(roomCode).emit("update-scoreboard", scores);
 
   });
 
 
+  socket.on("get-results", ({ roomCode }) => {
+    console.log(`Sonuçlar isteniyor: ${roomCode}`);
+    if (!rooms[roomCode]) {
+      socket.emit("error", { message: "Geçersiz oda kodu." });
+      return;
+    }
+    const participants = rooms[roomCode].participants;
+    const questions = rooms[roomCode].questions || [];
+    const scores = calculateScores(participants, questions);
 
+    socket.emit("quiz-results", scores);
+  });
+
+
+function calculateScores(participants, questions) {
+  const grouped = {};
+
+  for (const p of participants) {
+    if (!grouped[p.name]) grouped[p.name] = [];
+    grouped[p.name].push(p);
+  }
+
+  const scores = {};
+
+  for (const name in grouped) {
+    const candidates = grouped[name];
+    const nonEmpty = candidates.filter((p) => Array.isArray(p.answers) && p.answers.length > 0);
+    if (nonEmpty.length === 0) continue;
+
+    const best = nonEmpty.reduce((a, b) => (b.answers.length > a.answers.length ? b : a));
+
+    let score = 0;
+    const correctAnswers = [];
+
+    for (const [i, question] of questions.entries()) {
+      const userAnswer = best.answers.find((a) => a.questionIndex === i + 1);
+
+      if (!userAnswer || userAnswer.answer === null || userAnswer.answer === undefined) {
+        correctAnswers.push(null); // cevap boş bırakılmış
+        continue;
+      }
+
+      if (userAnswer.answer === question.correctAnswer) {
+        score += 10;
+        correctAnswers.push(true);
+      } else {
+        score -= 5;
+        correctAnswers.push(false);
+      }
+    }
+
+    scores[best.socketId || name] = {
+      name,
+      score,
+      answers: correctAnswers,
+    };
+  }
+
+  return scores;
+}
 
 
 
