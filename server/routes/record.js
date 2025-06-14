@@ -315,8 +315,6 @@ router.post('/create-quiz', async (req, res) => {
       description,
       createdBy,
       questions,
-      startDate,
-      endDate,
       questionCount,
       isActive
     } = req.body;
@@ -330,8 +328,6 @@ router.post('/create-quiz', async (req, res) => {
       createdBy: createdBy || "unknown",
       questions: Array.isArray(questions) ? questions : [],
       questionCount: questionCount || (Array.isArray(questions) ? questions.length : 0),
-      startDate: startDate ? new Date(startDate) : null,
-      endDate: endDate ? new Date(endDate) : null,
       isActive: typeof isActive === "boolean" ? isActive : false,
       createdAt: new Date()
     };

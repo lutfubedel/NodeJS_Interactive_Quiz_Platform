@@ -93,13 +93,7 @@ const CreateQuizPage = () => {
                     {quiz.title}
                   </h3>
                   <p className="text-sm text-white/80 mb-1">
-                    Konu: <span className="font-medium">{quiz.subject}</span>
-                  </p>
-                  <p className="text-sm text-white/80 mb-1">
-                    Başlangıç: {new Date(quiz.startDate).toLocaleString()}
-                  </p>
-                  <p className="text-sm text-white/80 mb-1">
-                    Bitiş: {new Date(quiz.endDate).toLocaleString()}
+                    Konu: <span className="font-medium">{quiz.description}</span>
                   </p>
                   <p className="text-sm text-white/80">
                     Quiz ID: {quiz.quizId}

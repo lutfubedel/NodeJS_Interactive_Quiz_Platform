@@ -100,12 +100,6 @@ const QuizSelectionPage = () => {
                 <p className="text-sm text-white/80 mb-1">
                   Konu: <span className="font-medium">{quiz.subject}</span>
                 </p>
-                <p className="text-sm text-white/80 mb-1">
-                  Başlangıç: {new Date(quiz.startDate).toLocaleString()}
-                </p>
-                <p className="text-sm text-white/80 mb-1">
-                  Bitiş: {new Date(quiz.endDate).toLocaleString()}
-                </p>
                 <p className="text-sm text-white/80 mb-4">
                   Quiz ID: {quiz.quizId}
                 </p>

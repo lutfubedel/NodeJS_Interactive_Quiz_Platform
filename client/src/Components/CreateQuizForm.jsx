@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 const CreateQuizForm = ({ onClose, onQuizCreated }) => {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [questionCount, setQuestionCount] = useState(5);
   const navigate = useNavigate();
 
@@ -18,7 +16,7 @@ const CreateQuizForm = ({ onClose, onQuizCreated }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     navigate("/add-questions", {
-      state: { title, subject, startDate, endDate, questionCount },
+      state: { title, subject, questionCount },
     });
     onClose();
   };
@@ -52,34 +50,6 @@ const CreateQuizForm = ({ onClose, onQuizCreated }) => {
               required
             />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div className="flex flex-col">
-              <label className="text-white text-sm mb-1">
-                Başlangıç Tarihi
-              </label>
-              <input
-                type="datetime-local"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="p-2 rounded bg-white/40 text-gray-800 text-sm focus:outline-none focus:ring-1 focus:ring-white"
-                required
-                min={getMinDateTime()}
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="text-white text-sm mb-1">Bitiş Tarihi</label>
-              <input
-                type="datetime-local"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="p-2 rounded bg-white/40 text-gray-800 text-sm focus:outline-none focus:ring-1 focus:ring-white"
-                required
-                min={startDate || getMinDateTime()}
-              />
-            </div>
-          </div>
-
           <div className="flex flex-col">
             <label className="text-white text-sm mb-1">
               Soru Sayısı (5-20)

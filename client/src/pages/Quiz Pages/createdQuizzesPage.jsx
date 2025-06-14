@@ -114,10 +114,6 @@ export default function CreatedQuizzesPage() {
               <p className="text-sm text-center mb-2">
                 Oluşturulma: {currentQuiz.createdAt}
               </p>
-              <p className="text-sm text-center mb-4">
-                Başlangıç: {currentQuiz.startDate} - Bitiş:{" "}
-                {currentQuiz.endDate}
-              </p>
               <div>
                 <h3 className="font-semibold mb-2">Katılımcılar:</h3>
                 <ul className="space-y-1 text-gray-800">
