@@ -221,54 +221,52 @@ io.on("connection", (socket) => {
   });
 
 
-function calculateScores(participants, questions) {
-  const grouped = {};
+  function calculateScores(participants, questions) {
+    const grouped = {};
 
-  for (const p of participants) {
-    if (!grouped[p.name]) grouped[p.name] = [];
-    grouped[p.name].push(p);
-  }
-
-  const scores = {};
-
-  for (const name in grouped) {
-    const candidates = grouped[name];
-    const nonEmpty = candidates.filter((p) => Array.isArray(p.answers) && p.answers.length > 0);
-    if (nonEmpty.length === 0) continue;
-
-    const best = nonEmpty.reduce((a, b) => (b.answers.length > a.answers.length ? b : a));
-
-    let score = 0;
-    const correctAnswers = [];
-
-    for (const [i, question] of questions.entries()) {
-      const userAnswer = best.answers.find((a) => a.questionIndex === i + 1);
-
-      if (!userAnswer || userAnswer.answer === null || userAnswer.answer === undefined) {
-        correctAnswers.push(null); // cevap boş bırakılmış
-        continue;
-      }
-
-      if (userAnswer.answer === question.correctAnswer) {
-        score += 10;
-        correctAnswers.push(true);
-      } else {
-        score -= 5;
-        correctAnswers.push(false);
-      }
+    for (const p of participants) {
+      if (!grouped[p.name]) grouped[p.name] = [];
+      grouped[p.name].push(p);
     }
 
-    scores[best.socketId || name] = {
-      name,
-      score,
-      answers: correctAnswers,
-    };
+    const scores = {};
+
+    for (const name in grouped) {
+      const candidates = grouped[name];
+      const nonEmpty = candidates.filter((p) => Array.isArray(p.answers) && p.answers.length > 0);
+      if (nonEmpty.length === 0) continue;
+
+      const best = nonEmpty.reduce((a, b) => (b.answers.length > a.answers.length ? b : a));
+
+      let score = 0;
+      const correctAnswers = [];
+
+      for (const [i, question] of questions.entries()) {
+        const userAnswer = best.answers.find((a) => a.questionIndex === i + 1);
+
+        if (!userAnswer || userAnswer.answer === null || userAnswer.answer === undefined) {
+          correctAnswers.push(null); // cevap boş bırakılmış
+          continue;
+        }
+
+        if (userAnswer.answer === question.correctAnswer) {
+          score += 10;
+          correctAnswers.push(true);
+        } else {
+          score -= 5;
+          correctAnswers.push(false);
+        }
+      }
+
+      scores[best.socketId || name] = {
+        name,
+        score,
+        answers: correctAnswers,
+      };
+    }
+
+    return scores;
   }
-
-  return scores;
-}
-
-
 
 
 
