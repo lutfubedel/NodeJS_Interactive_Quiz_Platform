@@ -14,10 +14,9 @@ function Home() {
     console.log("Firebase kullanıcısı:", currentUser);
     console.log("MongoDB'den gelen kullanıcı verisi:", userData);
 
-    // Kullanıcı varsa otomatik istatistikler sayfasına geçer.
     if(currentUser != null && userData != null){
       console.log("User Bulundu")
-      navigate("/statistics");
+      navigate("/profile");
     }
 
   }, [currentUser, userData]);

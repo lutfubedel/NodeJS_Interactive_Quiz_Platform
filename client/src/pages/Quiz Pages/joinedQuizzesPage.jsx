@@ -1,51 +1,93 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import Sidebar from "../../Components/Sidebar"; // Yolunu kendi projenle eşleştir
+import Sidebar from "../../Components/Sidebar";
+import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
 
-const sampleQuizzes = [
-  {
-    id: 1,
-    title: "Genel Kültür Yarışması",
-    date: "2025-05-12",
-    score: 85,
-    rank: 12,
-    totalParticipants: 128,
-    status: "Tamamlandı",
-  },
-  {
-    id: 2,
-    title: "JavaScript Temelleri",
-    date: "2025-05-25",
-    score: 72,
-    rank: 5,
-    totalParticipants: 45,
-    status: "Tamamlandı",
-  },
-  {
-    id: 3,
-    title: "Tarih Bilgisi Testi",
-    date: "2025-06-01",
-    score: null,
-    rank: null,
-    totalParticipants: 78,
-    status: "Devam Ediyor",
-  },
-];
+const formatDate = (isoString) => {
+  if (!isoString) return "Tarih yok";
+  const date = new Date(isoString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
 const JoinedQuizzesPage = () => {
   const [quizzes, setQuizzes] = useState([]);
+  const { userData } = useAuth();
 
   useEffect(() => {
-    setQuizzes(sampleQuizzes); // Buraya API'den veri çekme de eklenebilir
-  }, []);
+    const fetchJoinedQuizzes = async () => {
+      if (!userData?.name) return;
+
+      try {
+        const response = await axios.post("http://localhost:5050/api/quiz-results-by-name", {
+          name: userData.name,
+        });
+
+        const formattedQuizzes = await Promise.all(
+          response.data.results.map(async (item) => {
+            const scoresEntries = Object.entries(item.scores || {});
+
+            // Skorları azalan sıraya göre sırala
+            scoresEntries.sort((a, b) => (b[1].score ?? 0) - (a[1].score ?? 0));
+
+            const userIndex = scoresEntries.findIndex(
+              ([username]) => username.toLowerCase() === userData.name.toLowerCase()
+            );
+            const userRank = userIndex !== -1 ? userIndex + 1 : null;
+            const userScoreObj = userIndex !== -1 ? scoresEntries[userIndex][1] : null;
+
+            const scoresCount = scoresEntries.length;
+
+            // 🧠 Quiz başlığını quizId ile çek
+            let quizTitle = "Bilinmeyen Quiz";
+            let quizDate = formatDate(item.timestamp);
+            
+            console.log("response" + item.quizId)
+            try {
+              const quizRes = await axios.post("http://localhost:5050/api/get-quiz-by-id", {
+                quizId: item.quizId,
+              });
+
+              if (quizRes.data?.title) {
+                quizTitle = quizRes.data.title;
+              }
+              if (quizRes.data?.timestamp) {
+                quizDate = formatDate(quizRes.data.timestamp);
+              }
+            } catch (err) {
+              console.warn("Quiz başlığı alınamadı:", err);
+            }
+
+            return {
+              id: item._id,
+              title: quizTitle,
+              date: quizDate,
+              score: userScoreObj?.score ?? null,
+              rank: userRank,
+              totalParticipants:
+                item.participantCount === scoresCount ? item.participantCount : scoresCount,
+              status: "Tamamlandı",
+            };
+          })
+        );
+
+        setQuizzes(formattedQuizzes);
+      } catch (error) {
+        console.error("Katıldığı quizler alınamadı:", error);
+      }
+    };
+
+    fetchJoinedQuizzes();
+  }, [userData]);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-purple-600 to-indigo-500 text-white">
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
-      <main className="flex-1 ml-0 sm:ml-10 p-6 sm:p-10 ">
+      <main className="flex-1 ml-0 sm:ml-10 p-6 sm:p-10">
         <h1 className="text-3xl font-bold mb-8 text-center sm:text-left">
           Katıldığım Quizler
         </h1>
@@ -61,23 +103,14 @@ const JoinedQuizzesPage = () => {
             >
               <h2 className="text-xl font-semibold mb-2">{quiz.title}</h2>
               <p className="text-sm mb-1">📅 Tarih: {quiz.date}</p>
-              <p className="text-sm mb-1">
-                🧑‍🤝‍🧑 Katılımcı: {quiz.totalParticipants}
-              </p>
+              <p className="text-sm mb-1">🧑‍🤝‍🧑 Katılımcı: {quiz.totalParticipants}</p>
               <p className="text-sm mb-1">
                 🏅 Puan: {quiz.score !== null ? quiz.score : "Bekleniyor"}
               </p>
               <p className="text-sm mb-1">
-                🔢 Sıralama:{" "}
-                {quiz.rank !== null ? `#${quiz.rank}` : "Henüz Yok"}
+                🔢 Sıralama: {quiz.rank !== null ? `#${quiz.rank}` : "Henüz Yok"}
               </p>
-              <p
-                className={`text-sm font-medium mt-3 ${
-                  quiz.status === "Tamamlandı"
-                    ? "text-green-300"
-                    : "text-yellow-300"
-                }`}
-              >
+              <p className="text-sm font-medium mt-3 text-green-300">
                 ⏳ Durum: {quiz.status}
               </p>
             </motion.div>

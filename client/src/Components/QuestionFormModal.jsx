@@ -36,8 +36,8 @@ const QuestionFormModal = ({ onClose, onSave }) => {
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (!file || !file.type.startsWith("image/png")) {
-      alert("Lütfen sadece PNG dosyası yükleyin.");
+    if (!file || !["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
+      alert("Lütfen sadece PNG veya JPEG dosyası yükleyin.");
       return;
     }
 
@@ -126,7 +126,7 @@ const QuestionFormModal = ({ onClose, onSave }) => {
 
           {/* Soru Görseli */}
           <div className="mb-4">
-            <label className="block font-semibold mb-1">Soru Görseli (PNG)</label>
+            <label className="block font-semibold mb-1">Soru Görseli (PNG veya JPEG)</label>
 
             {!imageUrl && (
               <label
@@ -147,13 +147,13 @@ const QuestionFormModal = ({ onClose, onSave }) => {
                   />
                 </svg>
                 <span>
-                  PNG dosyası yüklemek için tıklayın <br />
+                  PNG veya JPEG dosyası yüklemek için tıklayın <br />
                   (Max 5MB)
                 </span>
                 <input
                   id="file-upload"
                   type="file"
-                  accept="image/png"
+                  accept="image/png, image/jpeg, image/jpg"
                   className="hidden"
                   onChange={handleImageChange}
                   disabled={isUploading}
@@ -161,14 +161,12 @@ const QuestionFormModal = ({ onClose, onSave }) => {
               </label>
             )}
 
-            {/* Yükleme sırasında spinner göster */}
             {isUploading && (
               <div className="mt-2 text-center text-white/80 animate-pulse">
                 Yükleniyor...
               </div>
             )}
 
-            {/* Yüklenmiş resmi göster */}
             {imageUrl && !isUploading && (
               <div className="mt-4 max-h-64 overflow-hidden rounded-lg border border-white/20 shadow">
                 <img
@@ -188,7 +186,6 @@ const QuestionFormModal = ({ onClose, onSave }) => {
               </div>
             )}
           </div>
-
 
           {/* Şık Sayısı */}
           <div className="mb-4">

@@ -26,8 +26,6 @@ async function connectToMongo() {
   return db;
 }
 
-export { connectToMongo };
-
 // Bugunun tarihini "31/05/2025" formatında verir.
 function getFormattedDate() {
   const now = new Date();
@@ -402,6 +400,109 @@ router.post('/get-quiz-questions', async (req, res) => {
 });
 
 
+// Olusturulan quizleri listeler
+router.post('/list-myQuizzes', async (req, res) => {
+  const { name } = req.body;
+
+  try {
+    const db = await connectToMongo();
+    const quizzes = db.collection('quizes');
+
+    const result = await quizzes.find({ createdBy: name }).sort({ createdDate: -1 }).toArray();
+
+    res.status(200).json({ questionBanks: result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Olusturulan quizleri listeler
+router.post('/count-participants', async (req, res) => {
+  const { quizId } = req.body;
+
+  try {
+    const db = await connectToMongo();
+    const collection = db.collection('quiz-results');
+
+    // quizId eşleşen sonuçları bul
+    const results = await collection.find({ quizId }).toArray();
+
+    if (results.length > 0) {
+      console.log("Bulunan quiz sonuçları:", results); // 🔍 Tüm veriyi konsola yaz
+    } else {
+      console.log("Hiç sonuç bulunamadı.");
+    }
+
+    // scores içindeki kişi sayısını say
+    const totalParticipants = results.reduce((acc, item) => {
+      const scores = item.scores || {};
+      return acc + Object.keys(scores).length;
+    }, 0);
+
+    res.status(200).json({ count: totalParticipants });
+  } catch (err) {
+    console.error("Sunucu hatası:", err);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+
+router.post("/quiz-results-by-name", async (req, res) => {
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: "İsim gerekli" });
+  }
+
+  try {
+    const db = await connectToMongo();
+    const collection = db.collection('quiz-results');
+    // scores nesnesi içinde isme sahip tüm dökümanları bul
+    const results = await collection
+      .find({ [`scores.${name}`]: { $exists: true } })
+      .toArray();
+
+    console.log(`[DEBUG] ${name} için bulunan sonuçlar:`, results);
+
+    res.json({ results });
+  } catch (error) {
+    console.error("Veri aranırken hata:", error);
+    res.status(500).json({ error: "Sunucu hatası" });
+  }
+});
+
+
+
+// Belirli bir quizId'ye ait quiz bilgisini döner
+router.post('/get-quiz-by-id', async (req, res) => {
+  const { quizId } = req.body;
+
+  try {
+    const db = await connectToMongo();
+    const collection = db.collection('quizes');
+
+    const quiz = await collection.findOne({ quizId: quizId });
+
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz bulunamadı" });
+    }
+
+    res.status(200).json({
+      id: quiz._id,
+      title: quiz.title || "Bilinmeyen Quiz",
+      description: quiz.description || "",
+      timestamp: quiz.timestamp || null,
+    });
+  } catch (err) {
+    console.error("Quiz alınırken hata oluştu:", err);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+
+
+
 
 
 
@@ -423,7 +524,6 @@ async function getQuizQuestions(quizId) {
   return quiz.questions || [];
 }
 
-export { getQuizQuestions };
 
 async function saveResultsToDatabase(quizId, roomCode, scores) {
   try {
@@ -445,6 +545,7 @@ async function saveResultsToDatabase(quizId, roomCode, scores) {
 }
 
 
-export { saveResultsToDatabase };
+
+export { connectToMongo,getQuizQuestions,saveResultsToDatabase };
 
 export default router;

@@ -1,46 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {ChevronLeft,ChevronRight,ChevronUp,ChevronDown,} from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 import Sidebar from "../../Components/Sidebar";
-
-const sampleCreatedQuizzes = [
-  {
-    id: 1,
-    title: "Tarih Bilgisi Quiz",
-    createdAt: "2025-04-15",
-    startDate: "2025-04-16",
-    endDate: "2025-04-17",
-    participants: [
-      { name: "Ali", score: 95 },
-      { name: "Ayşe", score: 80 },
-    ],
-  },
-  {
-    id: 2,
-    title: "Kimya Temel Kavramlar",
-    createdAt: "2025-05-01",
-    startDate: "2025-05-02",
-    endDate: "2025-05-03",
-    participants: [
-      { name: "Mehmet", score: 85 },
-      { name: "Fatma", score: 70 },
-    ],
-  },
-  {
-    id: 3,
-    title: "Fizik Enerji Dönüşümleri",
-    createdAt: "2025-05-05",
-    startDate: "2025-05-06",
-    endDate: "2025-05-07",
-    participants: [
-      { name: "Can", score: 90 },
-      { name: "Elif", score: 88 },
-    ],
-  },
-];
+import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
 
 export default function CreatedQuizzesPage() {
+  const { userData } = useAuth();
+  const [quizzes, setQuizzes] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [participantCount, setParticipantCount] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const isMobile = windowWidth < 768;
 
@@ -50,9 +19,48 @@ export default function CreatedQuizzesPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    if (!userData?.name) return;
+
+    const fetchQuizzes = async () => {
+      try {
+        const response = await axios.post("http://localhost:5050/api/list-myQuizzes", {
+          name: userData.name,
+        });
+        setQuizzes(response.data.questionBanks);
+      } catch (error) {
+        console.error("Quiz verileri alınamadı:", error);
+      }
+    };
+
+    fetchQuizzes();
+  }, [userData]);
+
+  // Katılımcı sayısını getir
+  useEffect(() => {
+    const fetchParticipantCount = async () => {
+      const currentQuiz = quizzes[currentIndex];
+      if (!currentQuiz?._id) return;
+
+      try {
+        const response = await axios.post("http://localhost:5050/api/count-participants", {
+          quizId: currentQuiz.quizId,
+        });
+        setParticipantCount(response.data.count);
+      } catch (error) {
+        console.error("Katılımcı sayısı alınamadı:", error);
+        setParticipantCount(null);
+      }
+    };
+
+    if (quizzes.length > 0) {
+      fetchParticipantCount();
+    }
+  }, [currentIndex, quizzes]);
+
   const canGoBack = currentIndex > 0;
-  const canGoForward = currentIndex < sampleCreatedQuizzes.length - 1;
-  const currentQuiz = sampleCreatedQuizzes[currentIndex];
+  const canGoForward = currentIndex < quizzes.length - 1;
+  const currentQuiz = quizzes[currentIndex];
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-indigo-500 to-pink-400 text-white">
@@ -87,48 +95,37 @@ export default function CreatedQuizzesPage() {
 
           {/* Quiz Paneli */}
           <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex}
-              initial={{
-                opacity: 0,
-                x: isMobile ? 0 : 100,
-                y: isMobile ? 100 : 0,
-              }}
-              animate={{ opacity: 1, x: 0, y: 0 }}
-              exit={{
-                opacity: 0,
-                x: isMobile ? 0 : -100,
-                y: isMobile ? -100 : 0,
-              }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="relative bg-white/30 border border-white rounded-xl p-6 text-black backdrop-blur-md shadow-md w-full"
-            >
-              {/* Quiz Index Gösterimi */}
-              <div className="absolute top-2 left-2 bg-white/40 text-xs text-black px-2 py-1 rounded-md shadow">
-                {currentIndex + 1} / {sampleCreatedQuizzes.length}
-              </div>
+            {currentQuiz && (
+              <motion.div
+                key={currentIndex}
+                initial={{
+                  opacity: 0,
+                  x: isMobile ? 0 : 100,
+                  y: isMobile ? 100 : 0,
+                }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                exit={{
+                  opacity: 0,
+                  x: isMobile ? 0 : -100,
+                  y: isMobile ? -100 : 0,
+                }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="relative bg-white/30 border border-white rounded-xl p-6 text-black backdrop-blur-md shadow-md w-full"
+              >
+                <div className="absolute top-2 left-2 bg-white/40 text-xs text-black px-2 py-1 rounded-md shadow">
+                  {currentIndex + 1} / {quizzes.length}
+                </div>
 
-              <h2 className="text-2xl font-bold text-center mb-2">
-                {currentQuiz.title}
-              </h2>
-              <p className="text-sm text-center mb-2">
-                Oluşturulma: {currentQuiz.createdAt}
-              </p>
-              <div>
-                <h3 className="font-semibold mb-2">Katılımcılar:</h3>
-                <ul className="space-y-1 text-gray-800">
-                  {currentQuiz.participants.map((p, idx) => (
-                    <li
-                      key={idx}
-                      className="bg-white/50 rounded px-3 py-1 flex justify-between"
-                    >
-                      <span>{p.name}</span>
-                      <span>{p.score}%</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
+                <h2 className="text-2xl font-bold text-center mb-2">
+                  {currentQuiz.title}
+                </h2>
+
+                <div className="mb-3 text-center text-sm text-black font-medium">
+                  Katılımcı Sayısı:{" "}
+                  {participantCount !== null ? `${participantCount} kişi` : "Yükleniyor..."}
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* Sağ Ok */}

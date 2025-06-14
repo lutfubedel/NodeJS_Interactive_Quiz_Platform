@@ -119,13 +119,13 @@ const QuestionBankSelectModal = ({ onClose, onSelect }) => {
                         className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow transition w-full"
                         onClick={() => onSelect(previewQuestion)}
                       >
-                        ✅ Seç ve Onayla
+                        Seç ve Onayla
                       </button>
                       <button
                         className="px-4 py-2 bg-white/60 hover:bg-white/80 text-black rounded-xl shadow transition w-full"
                         onClick={() => setPreviewQuestion(null)}
                       >
-                        ❌ Vazgeç
+                        Vazgeç
                       </button>
                     </div>
                   </>

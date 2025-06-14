@@ -8,7 +8,6 @@ import EmailVerification from "./auth/emailVerification";
 import Terms from "./auth/terms";
 import CreateProfile from "./auth/createProfile";
 import Home from "./pages/Home";
-import Statistics from "./pages/Statistics";
 import JoinQuiz from "./pages/JoinQuiz";
 import { AuthProvider } from "./context/AuthContext";
 import ProfilePage from "./pages/ProfilePage";
@@ -36,7 +35,6 @@ function App() {
           <Route path="/forgetPassword" element={<EmailVerification />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/statistics" element={<Statistics />} />
           <Route path="/question-bank" element={<QuestionBankPage />} />
           <Route path="/question-bank/:bankId" element={<QuestionsPage />} />
           <Route path="/quiz-selection" element={<QuizSelectionPage />} />

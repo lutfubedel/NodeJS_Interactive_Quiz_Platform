@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../../Components/Sidebar";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FileQuestion, Pencil, Trash2 } from "lucide-react";
+import { FileQuestion, Trash2 } from "lucide-react";
 import QuestionFormModal from "../../Components/QuestionFormModal";
 import QuestionBankSelectModal from "../../Components/QuestionBankSelectModal";
 import { useAuth } from "../../context/AuthContext";
@@ -28,6 +28,7 @@ const AddQuestionsPage = () => {
   }, [location.state]);
 
   const handleQuestionClick = (index) => {
+    if (questions[index]) return; // Eğer soru varsa, tıklamayı engelle
     setModalQuestionIndex(index);
     setShowModal(true);
   };
@@ -81,17 +82,6 @@ const AddQuestionsPage = () => {
                 className="absolute right-3 flex gap-2 z-10"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  onClick={() => {
-                    setModalQuestionIndex(i);
-                    setShowQuestionForm(true);
-                    setShowModal(false);
-                  }}
-                  className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-                >
-                  <Pencil className="w-5 h-5" />
-                  Düzenle
-                </button>
                 <button
                   onClick={() => handleRemoveQuestion(i)}
                   className="flex items-center gap-1 px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded-md"

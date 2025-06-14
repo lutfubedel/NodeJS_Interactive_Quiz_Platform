@@ -26,7 +26,6 @@ const menuItems = [
   { to: "/create-quiz", icon: <FaPlus />, label: "Quiz Oluştur" },
   { to: "/quiz-history", icon: <FaHistory />, label: "Quiz Geçmişi" },
   { to: "/question-bank", icon: <FaQuestionCircle />, label: "Soru Bankası" },
-  { to: "/statistics", icon: <FaChartBar />, label: "İstatistikler" },
 ];
 
 // Logout fonksiyonu
