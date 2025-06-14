@@ -22,7 +22,7 @@ const Login = () => {
          rememberMe
            ? localStorage.setItem("user", JSON.stringify(userData))
            : sessionStorage.setItem("user", JSON.stringify(userData));
-          navigate("/statistics");
+          navigate("/profile");
        }
      } catch (error) {
        toast.error("Login failed");

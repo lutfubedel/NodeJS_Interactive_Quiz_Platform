@@ -82,7 +82,7 @@ export const signInWithGoogle = async (navigate) => {
 
     await axios.post("http://localhost:5050/api/create-user", newUser);
 
-    navigate("/statistics");
+    navigate("/profile");
     return user;
   } catch (error) {
     console.error("Google Auth Error:", error);
