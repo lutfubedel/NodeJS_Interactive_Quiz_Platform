@@ -14,11 +14,10 @@ function Home() {
     console.log("Firebase kullanıcısı:", currentUser);
     console.log("MongoDB'den gelen kullanıcı verisi:", userData);
 
-    if(currentUser != null && userData != null){
-      console.log("User Bulundu")
+    if (currentUser != null && userData != null) {
+      console.log("User Bulundu");
       navigate("/profile");
     }
-
   }, [currentUser, userData]);
 
   return (
@@ -39,7 +38,7 @@ function Home() {
         animate={{ opacity: 1, x: 0 }} // Animasyonla sola doğru kayar
         transition={{ duration: 1 }} // Animasyon süresi 1 saniye
       >
-        Giriş yapmak veya bir oyuna katılmak için seçeneklerden birini seç!
+        Hadi Giriş Yap!
       </motion.p>
 
       {/* Butonlar Componenti */}
