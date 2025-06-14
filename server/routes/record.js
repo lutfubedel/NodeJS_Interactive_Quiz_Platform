@@ -425,4 +425,26 @@ async function getQuizQuestions(quizId) {
 
 export { getQuizQuestions };
 
+async function saveResultsToDatabase(quizId, roomCode, scores) {
+  try {
+    const db = await connectToMongo();
+    const resultsCollection = db.collection('quiz-results');
+
+    const resultDoc = {
+      quizId,
+      roomCode,
+      timestamp: new Date(),
+      scores, // doğrudan scores nesnesini kaydet
+    };
+
+    const result = await resultsCollection.insertOne(resultDoc);
+    console.log("Quiz sonuçları başarıyla kaydedildi:", result.insertedId);
+  } catch (err) {
+    console.error("saveResultsToDatabase hatası:", err.message);
+  }
+}
+
+
+export { saveResultsToDatabase };
+
 export default router;

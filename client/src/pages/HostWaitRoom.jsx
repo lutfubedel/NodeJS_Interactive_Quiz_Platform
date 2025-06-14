@@ -83,35 +83,38 @@ const HostWaitRoom = () => {
       if (!quizStarted) setQuizStarted(true);
       setTimeLeft(timeLimit);
       setQuestionNumber((prev) => prev + 1);
-    };
+  };
 
-    const handleScoreboardUpdate = (data) => {
-      console.log("Gelen scoreboard verisi:", data);
-      if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
-        // Nesneyse içindeki user objelerini dizi olarak al
-        setScoreboardData(Object.values(data));
-      } else if (Array.isArray(data)) {
-        setScoreboardData(data);
-      } else {
-        console.warn("Geçersiz skor verisi:", data);
-      }
-    };
+  const handleScoreboardUpdate = (data) => {
+    if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+      // Object.entries ile anahtar ve değeri al, kullanıcı adı objeye ekle
+      const usersWithName = Object.entries(data).map(([name, userData]) => ({
+        name,
+        ...userData,
+      }));
+      setScoreboardData(usersWithName);
+    } else if (Array.isArray(data)) {
+      setScoreboardData(data);
+    } else {
+      console.warn("Geçersiz skor verisi:", data);
+    }
+  };
 
-    const handleQuizFinished = () => {
-      setQuizFinished(true);
-      navigate(`/results/${roomCode}`);
-    };
+  const handleQuizFinished = () => {
+    setQuizFinished(true);
+    navigate(`/results/${roomCode}`);
+  };
 
 
-    socket.on("new-question", handleNewQuestion);
-    socket.on("update-scoreboard", handleScoreboardUpdate);
-    socket.on("quiz-finished", handleQuizFinished);
+  socket.on("new-question", handleNewQuestion);
+  socket.on("update-scoreboard", handleScoreboardUpdate);
+  socket.on("quiz-finished", handleQuizFinished);
 
-    return () => {
-      socket.off("new-question", handleNewQuestion);
-      socket.off("update-scoreboard", handleScoreboardUpdate);
-      socket.off("quiz-finished", handleQuizFinished);
-    };
+  return () => {
+    socket.off("new-question", handleNewQuestion);
+    socket.off("update-scoreboard", handleScoreboardUpdate);
+    socket.off("quiz-finished", handleQuizFinished);
+  };
   }, [quizStarted, navigate, roomCode]);
 
   useEffect(() => {

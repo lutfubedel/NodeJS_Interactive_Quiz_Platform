@@ -7,9 +7,8 @@ import multer from "multer";
 import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
 import routers from './routes/record.js';
-import { ObjectId } from 'mongodb';
-import { connectToMongo } from './routes/record.js'
 import { getQuizQuestions } from './routes/record.js';
+import { saveResultsToDatabase } from "./routes/record.js";
 
 dotenv.config();
 
@@ -147,13 +146,20 @@ io.on("connection", (socket) => {
     }, 10000);
   };
 
-  const askNextQuestion = (roomCode) => {
+  const askNextQuestion = async (roomCode) => {
     const questions = rooms[roomCode].questions;
     const index = rooms[roomCode].currentQuestionIndex;
 
     if (index >= questions.length) {
       io.to(roomCode).emit("quiz-finished");
-      return;
+
+    const participants = rooms[roomCode].participants;
+    const questions = rooms[roomCode].questions || [];
+    const quizId = rooms[roomCode].quizId;
+    const scores = calculateScores(participants, questions);
+
+    await saveResultsToDatabase(quizId, roomCode, scores); // sadece scores gönder
+    return;
     }
 
     const currentQuestion = questions[index];
@@ -241,26 +247,36 @@ io.on("connection", (socket) => {
       let score = 0;
       const correctAnswers = [];
 
+      // Sayaçlar
+      let trueCount = 0;
+      let falseCount = 0;
+      let unansweredCount = 0;
+
       for (const [i, question] of questions.entries()) {
         const userAnswer = best.answers.find((a) => a.questionIndex === i + 1);
 
         if (!userAnswer || userAnswer.answer === null || userAnswer.answer === undefined) {
           correctAnswers.push(null); // cevap boş bırakılmış
+          unansweredCount++;
           continue;
         }
 
         if (userAnswer.answer === question.correctAnswer) {
           score += 10;
           correctAnswers.push(true);
+          trueCount++;
         } else {
           score -= 5;
           correctAnswers.push(false);
+          falseCount++;
         }
       }
 
-      scores[best.socketId || name] = {
-        name,
+      scores[name] = {
         score,
+        true: trueCount,
+        false: falseCount,
+        unanswered: unansweredCount,
         answers: correctAnswers,
       };
     }

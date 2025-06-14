@@ -71,17 +71,23 @@ const Results = () => {
   useEffect(() => {
     socket.emit("get-results", { roomCode });
 
-    socket.on("quiz-results", (data) => {
+    const handleResults = (data) => {
       console.log("Quiz sonuçları geldi:", data);
       if (typeof data === "object" && data !== null && !Array.isArray(data)) {
-        setResults(Object.values(data));
+        const usersWithName = Object.entries(data).map(([name, userData]) => ({
+          name,
+          ...userData,
+        }));
+        setResults(usersWithName);
       } else {
         setResults(data);
       }
-    });
+    };
+
+    socket.on("quiz-results", handleResults);
 
     return () => {
-      socket.off("quiz-results");
+      socket.off("quiz-results", handleResults);
     };
   }, [roomCode]);
 
