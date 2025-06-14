@@ -195,7 +195,10 @@ io.on("connection", (socket) => {
     rooms[roomCode].participants.forEach(p => {
       console.log(`- ${p.name} (Host: ${p.isHost}): Answers =`, p.answers || []);
     });
+
+
   });
+
 
 
 
