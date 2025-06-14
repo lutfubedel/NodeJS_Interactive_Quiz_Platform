@@ -47,131 +47,155 @@ io.on("connection", (socket) => {
   console.log("Yeni istemci bağlandı:", socket.id);
   socket.emit("connected", { message: "Socket.IO bağlantısı başarılı!" });
 
-socket.on("host-join-room", ({ roomCode, hostName, quizId }) => {
-  if (!roomCode || !hostName || !quizId) {
-    socket.emit("error", { message: "Oda kodu, host adı ve quiz ID gereklidir." });
-    return;
-  }
+  socket.on("host-join-room", ({ roomCode, hostName, quizId }) => {
+    if (!roomCode || !hostName || !quizId) {
+      socket.emit("error", { message: "Oda kodu, host adı ve quiz ID gereklidir." });
+      return;
+    }
 
-  socket.join(roomCode);
+    socket.join(roomCode);
 
-  // Oda daha önce oluşturulmamışsa oluştur
-  if (!rooms[roomCode]) {
-    rooms[roomCode] = {
-      quizId,
-      participants: [],
-    };
-  }
+    // Oda daha önce oluşturulmamışsa oluştur
+    if (!rooms[roomCode]) {
+      rooms[roomCode] = {
+        quizId,
+        participants: [],
+      };
+    }
 
-  // Host'u katılımcı listesine isHost: true ile ekle
-  rooms[roomCode].participants.push({
-    socketId: socket.id,
-    name: hostName,
-    isHost: true,
+    // Host'u katılımcı listesine isHost: true ile ekle
+    rooms[roomCode].participants.push({
+      socketId: socket.id,
+      name: hostName,
+      isHost: true,
+    });
+
+    console.log(`Host oda oluşturdu: ${roomCode} (${hostName}) | Quiz ID: ${quizId}`);
+
+    // Sadece isHost: false olan katılımcıları gönder
+    const participants = rooms[roomCode].participants.filter(p => !p.isHost);
+    io.to(roomCode).emit("update-participants", participants);
   });
 
-  console.log(`Host oda oluşturdu: ${roomCode} (${hostName}) | Quiz ID: ${quizId}`);
 
-  // Sadece isHost: false olan katılımcıları gönder
-  const participants = rooms[roomCode].participants.filter(p => !p.isHost);
-  io.to(roomCode).emit("update-participants", participants);
-});
+    // **Buraya bu join-room event'ini ekle:**
+  socket.on("join-room", ({ roomCode, participant }) => {
+    const participantName = participant?.name;
 
+    if (!roomCode || !participantName) {
+      socket.emit("error", { message: "Oda kodu ve katılımcı adı gereklidir." });
+      return;
+    }
 
-  // **Buraya bu join-room event'ini ekle:**
-socket.on("join-room", ({ roomCode, participant }) => {
-  const participantName = participant?.name;
+    if (!rooms[roomCode]) {
+      socket.emit("error", { message: "Geçersiz oda kodu." });
+      return;
+    }
 
-  if (!roomCode || !participantName) {
-    socket.emit("error", { message: "Oda kodu ve katılımcı adı gereklidir." });
-    return;
-  }
+    socket.join(roomCode);
 
-  if (!rooms[roomCode]) {
-    socket.emit("error", { message: "Geçersiz oda kodu." });
-    return;
-  }
+    rooms[roomCode].participants.push({
+      socketId: socket.id,
+      name: participantName,
+      isHost: false,
+    });
 
-  socket.join(roomCode);
+    console.log(`Katılımcı katıldı: ${participantName} -> ${roomCode}`);
 
-  rooms[roomCode].participants.push({
-    socketId: socket.id,
-    name: participantName,
-    isHost: false,
+    io.to(roomCode).emit("user-joined", {
+      name: participantName,
+      socketId: socket.id,
+    });
+
+    const participants = rooms[roomCode].participants.filter(p => !p.isHost);
+    io.to(roomCode).emit("update-participants", participants);
   });
 
-  console.log(`Katılımcı katıldı: ${participantName} -> ${roomCode}`);
-
-  io.to(roomCode).emit("user-joined", {
-    name: participantName,
-    socketId: socket.id,
+  socket.on("start-quiz", ({ roomCode }) => {
+    console.log(`Quiz başlatma isteği: ${roomCode}`);
+    // Güvenlik için kontrol edebilirsin: sadece host emit edebilsin diye
+    if (rooms[roomCode]) {
+      io.to(roomCode).emit("quiz-started");
+      console.log(`Quiz başlatıldı: ${roomCode}`);
+      console.log(rooms[roomCode]);
+      startQuizFlow(roomCode);
+    }
   });
 
-  const participants = rooms[roomCode].participants.filter(p => !p.isHost);
-  io.to(roomCode).emit("update-participants", participants);
-});
 
-socket.on("start-quiz", ({ roomCode }) => {
-  console.log(`Quiz başlatma isteği: ${roomCode}`);
-  // Güvenlik için kontrol edebilirsin: sadece host emit edebilsin diye
-  if (rooms[roomCode]) {
-    io.to(roomCode).emit("quiz-started");
-    console.log(`Quiz başlatıldı: ${roomCode}`);
-    console.log(rooms[roomCode]);
-    startQuizFlow(roomCode);
-  }
-});
+  const startQuizFlow = async (roomCode) => {
+    const quizId = rooms[roomCode].quizId;
+    const questions = await getQuizQuestions(quizId);
+
+    if (!questions || questions.length === 0) {
+      io.to(roomCode).emit("quiz-finished");
+      return;
+    }
+
+    rooms[roomCode].currentQuestionIndex = 0;
+    rooms[roomCode].questions = questions;
+
+    // 1. Önce quiz başlayacak diye haber verelim
+    io.to(roomCode).emit("quiz-starting", { countdown: 10 });
+    console.log(`Quiz ${roomCode} odasında 10 saniye sonra başlayacak.`);
+
+    setTimeout(() => {
+      io.to(roomCode).emit("quiz-started"); // Tetikleyici sinyal
+      console.log(`Quiz ${roomCode} odasında başladı.`);
+
+      askNextQuestion(roomCode); // Soruları başlat
+    }, 10000);
+  };
+
+  const askNextQuestion = (roomCode) => {
+    const questions = rooms[roomCode].questions;
+    const index = rooms[roomCode].currentQuestionIndex;
+
+    if (index >= questions.length) {
+      io.to(roomCode).emit("quiz-finished");
+      return;
+    }
+
+    const currentQuestion = questions[index];
+
+    io.to(roomCode).emit("new-question", {
+      index: index + 1,
+      question: currentQuestion,
+      timeLimit: 10,
+    });
+
+    setTimeout(() => {
+      rooms[roomCode].currentQuestionIndex++;
+      askNextQuestion(roomCode);
+    }, 10000);
+  };
 
 
-const startQuizFlow = async (roomCode) => {
-  const quizId = rooms[roomCode].quizId;
-  const questions = await getQuizQuestions(quizId);
+  socket.on("submit-answer", ({ roomCode, answer, questionIndex }) => {
+    const participant = rooms[roomCode]?.participants.find(p => p.socketId === socket.id);
+    if (!participant) return;
 
-  if (!questions || questions.length === 0) {
-    io.to(roomCode).emit("quiz-finished");
-    return;
-  }
+    // `answers` dizisi yoksa oluştur
+    if (!participant.answers) {
+      participant.answers = [];
+    }
 
-  rooms[roomCode].currentQuestionIndex = 0;
-  rooms[roomCode].questions = questions;
+    // Aynı soru için birden fazla cevap varsa, eski cevabı sil (opsiyonel ama önerilir)
+    participant.answers = participant.answers.filter(a => a.questionIndex !== questionIndex);
 
-  // 1. Önce quiz başlayacak diye haber verelim
-  io.to(roomCode).emit("quiz-starting", { countdown: 10 });
-  console.log(`Quiz ${roomCode} odasında 10 saniye sonra başlayacak.`);
+    // Yeni cevabı ekle
+    participant.answers.push({
+      questionIndex,
+      answer,
+      timestamp: new Date(),
+    });
 
-  setTimeout(() => {
-    io.to(roomCode).emit("quiz-started"); // Tetikleyici sinyal
-    console.log(`Quiz ${roomCode} odasında başladı.`);
-
-    askNextQuestion(roomCode); // Soruları başlat
-  }, 10000);
-};
-
-const askNextQuestion = (roomCode) => {
-  const questions = rooms[roomCode].questions;
-  const index = rooms[roomCode].currentQuestionIndex;
-
-  if (index >= questions.length) {
-    io.to(roomCode).emit("quiz-finished");
-    return;
-  }
-
-  const currentQuestion = questions[index];
-
-  io.to(roomCode).emit("new-question", {
-    index: index + 1,
-    question: currentQuestion,
-    timeLimit: 10,
+    // Burada tüm oda katılımcılarının cevaplarını göster
+    console.log(`Oda ${roomCode} katılımcıları ve cevapları:`);
+    rooms[roomCode].participants.forEach(p => {
+      console.log(`- ${p.name} (Host: ${p.isHost}): Answers =`, p.answers || []);
+    });
   });
-
-  setTimeout(() => {
-    rooms[roomCode].currentQuestionIndex++;
-    askNextQuestion(roomCode);
-  }, 10000);
-};
-
-
-
 
 
 

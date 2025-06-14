@@ -5,66 +5,127 @@ import { motion } from "framer-motion";
 
 const LiveQuiz = () => {
   const { roomCode } = useParams();
-  const navigate = useNavigate(); // yönlendirme için
+  const navigate = useNavigate();
+
   const [quizStarted, setQuizStarted] = useState(false);
   const [question, setQuestion] = useState(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [selectedOption, setSelectedOption] = useState(null);
-  const timerRef = useRef(null);
+
+  // Ref: cevap gönderildi mi kontrolü için
+  const hasSubmittedRef = useRef(false);
+  // Ref: kullanıcının seçtiği seçenek
+  const selectedOptionRef = useRef(null);
+  // Ref: mevcut soru indeksi
+  const questionIndexRef = useRef(0);
+  // Timer referansları
+  const countdownIntervalRef = useRef(null);
+  const submitTimeoutRef = useRef(null);
 
   useEffect(() => {
+    // Quiz başlama geri bildirimi
     socket.on("quiz-starting", ({ countdown }) => {
       console.log(`Quiz ${countdown} saniye içinde başlayacak.`);
       setQuizStarted(false);
     });
 
     socket.on("quiz-started", () => {
+      console.log("Quiz başladı");
       setQuizStarted(true);
     });
 
+    // Yeni soru geldiğinde
     socket.on("new-question", ({ index, question, timeLimit }) => {
+      console.log(`Yeni soru: ${index}`, question);
+
+      // Önceki timerlar temizlenir
+      clearInterval(countdownIntervalRef.current);
+      clearTimeout(submitTimeoutRef.current);
+
+      // Durumlar güncellenir
       setQuestion(question);
       setQuestionIndex(index);
+      questionIndexRef.current = index;
+
       setTimeLeft(timeLimit);
       setSelectedOption(null);
+      selectedOptionRef.current = null;
+      hasSubmittedRef.current = false;
+
+      // Geri sayım başlatılır
+      countdownIntervalRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownIntervalRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Süre dolduğunda otomatik cevap gönder
+      submitTimeoutRef.current = setTimeout(() => {
+        console.log("Süre doldu, cevap gönderiliyor...");
+        submitAnswer();
+      }, timeLimit * 1000);
     });
 
+    // Quiz bittiğinde yönlendirme
     socket.on("quiz-finished", () => {
+      clearInterval(countdownIntervalRef.current);
+      clearTimeout(submitTimeoutRef.current);
       navigate(`/results/${roomCode}`);
     });
 
+    // Cleanup
     return () => {
       socket.off("quiz-starting");
       socket.off("quiz-started");
       socket.off("new-question");
       socket.off("quiz-finished");
+
+      clearInterval(countdownIntervalRef.current);
+      clearTimeout(submitTimeoutRef.current);
     };
-  }, [navigate]);
+  }, [navigate, roomCode]);
 
-  useEffect(() => {
-    if (timeLeft === 0 && question) {
-      submitAnswer();
-    }
+  // Seçenek tıklama
+  const handleOptionClick = (optionIndex) => {
+    if (hasSubmittedRef.current) return; // Cevap zaten gönderilmişse engelle
 
-    if (timeLeft > 0 && question) {
-      timerRef.current = setTimeout(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    }
-
-    return () => clearTimeout(timerRef.current);
-  }, [timeLeft, question]);
-
-  const submitAnswer = () => {
-    socket.emit("submit-answer", {
-      roomCode,
-      answer: selectedOption,
-      questionIndex,
-    });
-    console.log("Cevap gönderildi:", selectedOption);
+    setSelectedOption(optionIndex);
+    selectedOptionRef.current = optionIndex;  // burayı ekle
   };
 
+  // Cevap gönderme fonksiyonu
+  const submitAnswer = () => {
+    if (hasSubmittedRef.current) {
+      console.log("Cevap zaten gönderilmiş.");
+      return;
+    }
+
+    hasSubmittedRef.current = true;
+
+    // Burada state değil ref kullan
+    const currentSelected = selectedOptionRef.current;
+    let answerChar = null;
+
+    if (currentSelected !== null && typeof currentSelected !== "undefined") {
+      answerChar = String.fromCharCode(65 + currentSelected); // 0 -> A, 1 -> B, ...
+    }
+
+    console.log(`Cevap gönderiliyor: Soru ${questionIndexRef.current} - Cevap: ${answerChar ?? "null"}`);
+
+    socket.emit("submit-answer", {
+      roomCode,
+      answer: answerChar,
+      questionIndex: questionIndexRef.current,
+    });
+  };
+
+
+  // Quiz başlamadan gösterilecek ekran
   if (!quizStarted) {
     return (
       <motion.div
@@ -74,14 +135,11 @@ const LiveQuiz = () => {
         transition={{ duration: 1 }}
         className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-600 to-pink-500 text-white p-6"
       >
-        {/* Dönen loading simgesi */}
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           className="w-16 h-16 border-4 border-white/100 border-t-transparent rounded-full mb-6"
         />
-
-        {/* Fade ve scale animasyonlu metin */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -94,14 +152,15 @@ const LiveQuiz = () => {
     );
   }
 
+  // Soru yükleniyorsa
   if (!question) {
-    return <div className="loading">Soru yükleniyor...</div>;
+    return <div className="loading text-white text-center mt-20">Soru yükleniyor...</div>;
   }
 
+  // Ana quiz ekranı
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 to-pink-500 text-white p-4">
       <div className="w-full max-w-5xl bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-6">
-        {/* Kalan Süre - üstte */}
         <div className="text-center text-sm font-mono mb-4">
           ⏳ Kalan süre :{" "}
           {timeLeft <= 5 ? (
@@ -118,26 +177,20 @@ const LiveQuiz = () => {
               {timeLeft} saniye
             </motion.span>
           ) : (
-            <span className="text-lg font-bold text-white">
-              {timeLeft} saniye
-            </span>
+            <span className="text-lg font-bold text-white">{timeLeft} saniye</span>
           )}
         </div>
 
-        {/* Panel içi: Soru ve Şıklar (ANİMASYONLU) */}
         <motion.div
-          key={questionIndex} // her soru değişiminde animasyonu tetikler
+          key={questionIndex}
           initial={{ x: 200, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -200, opacity: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="grid grid-cols-2 gap-4 border-t border-white/30 pt-6"
         >
-          {/* Sol Panel: Soru ve Görsel */}
           <div className="pr-4 border-r border-white/30">
-            <h2 className="text-2xl font-semibold mb-4">
-              Soru {questionIndex}
-            </h2>
+            <h2 className="text-2xl font-semibold mb-4">Soru {questionIndex}</h2>
             <p className="text-white text-lg">{question.question}</p>
 
             {question.image && (
@@ -149,7 +202,6 @@ const LiveQuiz = () => {
             )}
           </div>
 
-          {/* Sağ Panel: Şıklar */}
           <div className="pl-4 flex flex-col gap-3">
             {question.options.map((option, i) => (
               <motion.div
@@ -157,15 +209,15 @@ const LiveQuiz = () => {
                 initial={{ x: 50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.1 * i, duration: 0.3 }}
-                onClick={() => setSelectedOption(option)}
+                onClick={() => handleOptionClick(i)}
                 className={`cursor-pointer p-3 rounded-lg border border-white/30 transition-all duration-200 text-sm text-white
-              ${
-                selectedOption === option
-                  ? "bg-blue-500 font-semibold scale-105"
-                  : "bg-white/20 hover:bg-white/30"
-              }`}
+                ${
+                  selectedOption === i
+                    ? "bg-blue-500 font-semibold scale-105"
+                    : "bg-white/20 hover:bg-white/30"
+                }`}
               >
-                {option}
+                <strong>{String.fromCharCode(65 + i)}.</strong> {option}
               </motion.div>
             ))}
           </div>
