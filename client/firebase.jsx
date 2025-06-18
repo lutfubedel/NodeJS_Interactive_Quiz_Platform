@@ -31,8 +31,8 @@ export const register = async (name,surname,email,password,birthdate,navigate) =
     );
     const user = userCredential.user;
 
-    await sendEmailVerification(user);
-    toast.success("Verification email sent! Please check your inbox.");
+    //await sendEmailVerification(user);
+    //toast.success("Verification email sent! Please check your inbox.");
 
     const checkEmailVerification = setInterval(async () => {
       await user.reload();
@@ -49,7 +49,7 @@ export const register = async (name,surname,email,password,birthdate,navigate) =
           email: user.email,
         };
 
-        await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/create-user", newUser);
+        await axios.post("http://localhost:5050/api/create-user", newUser);
 
         navigate("/login");
       }
@@ -80,7 +80,7 @@ export const signInWithGoogle = async (navigate) => {
       email: user.email,
     };
 
-    await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/create-user", newUser);
+    await axios.post("http://localhost:5050/api/create-user", newUser);
 
     navigate("/profile");
     return user;

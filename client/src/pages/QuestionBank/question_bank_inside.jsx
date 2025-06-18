@@ -35,7 +35,7 @@ const QuestionsPage = () => {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        "https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/get-questions",
+        "http://localhost:5050/api/get-questions",
         { bankId }
       );
       setQuestions(response.data.questions);
@@ -57,7 +57,7 @@ const QuestionsPage = () => {
 
   const handleSave = async (newQuestion) => {
     try {
-      await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/add-question", {
+      await axios.post("http://localhost:5050/api/add-question", {
         bankId,
         question: newQuestion,
       });
@@ -286,7 +286,7 @@ const QuestionsPage = () => {
             onClose={() => setIsDeleteModalOpen(false)}
             onConfirm={async () => {
               try {
-                await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/delete-question", {
+                await axios.post("http://localhost:5050/api/delete-question", {
                   bankId,
                   questionText: selectedQuestion?.question,
                 });

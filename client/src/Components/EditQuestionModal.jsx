@@ -52,7 +52,7 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
 
     setIsUploading(true);
     try {
-      const res = await fetch("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/upload", {
+      const res = await fetch("http://localhost:5050/api/upload", {
         method: "POST",
         body: formData,
       });
@@ -84,7 +84,7 @@ const EditQuestionModal = ({ question, onClose, onSave }) => {
     };
 
     try {
-      await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/update-question", payload);
+      await axios.post("http://localhost:5050/api/update-question", payload);
     } catch (error) {
       console.error("Soru güncelleme hatası:", error);
     }

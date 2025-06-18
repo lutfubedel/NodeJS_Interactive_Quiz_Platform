@@ -24,7 +24,7 @@ export default function CreatedQuizzesPage() {
 
     const fetchQuizzes = async () => {
       try {
-        const response = await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/list-myQuizzes", {
+        const response = await axios.post("http://localhost:5050/api/list-myQuizzes", {
           name: userData.name,
         });
         setQuizzes(response.data.questionBanks);
@@ -43,7 +43,7 @@ export default function CreatedQuizzesPage() {
       if (!currentQuiz?._id) return;
 
       try {
-        const response = await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/count-participants", {
+        const response = await axios.post("http://localhost:5050/api/count-participants", {
           quizId: currentQuiz.quizId,
         });
         setParticipantCount(response.data.count);

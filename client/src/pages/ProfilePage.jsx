@@ -63,7 +63,7 @@ const handleSave = async () => {
   }
 
   try {
-    const response = await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/update-user", {
+    const response = await axios.post("http://localhost:5050/api/update-user", {
       userId: userData._id,
       name: formData.name,
       surname: formData.surname,

@@ -22,7 +22,7 @@ const JoinedQuizzesPage = () => {
       if (!userData?.name) return;
 
       try {
-        const response = await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/quiz-results-by-name", {
+        const response = await axios.post("http://localhost:5050/api/quiz-results-by-name", {
           name: userData.name,
         });
 
@@ -47,7 +47,7 @@ const JoinedQuizzesPage = () => {
             
             console.log("response" + item.quizId)
             try {
-              const quizRes = await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/get-quiz-by-id", {
+              const quizRes = await axios.post("http://localhost:5050/api/get-quiz-by-id", {
                 quizId: item.quizId,
               });
 

@@ -119,7 +119,7 @@ const AddQuestionsPage = () => {
     };
 
     try {
-      const response = await fetch("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/create-quiz", {
+      const response = await fetch("http://localhost:5050/api/create-quiz", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -38,7 +38,7 @@ const QuestionBankForm = ({ onSubmit, onCancel }) => {
         subtitle: description,
         creator: userData.name
       };
-      await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/create-questionBank", newQBank);
+      await axios.post("http://localhost:5050/api/create-questionBank", newQBank);
     };
 
 

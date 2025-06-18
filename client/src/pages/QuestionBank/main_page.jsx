@@ -29,7 +29,7 @@ const QuestionBankPage = () => {
 const handleConfirmDelete = async () => {
   try {
     console.log("Silinecek ID:", selectedBankId);
-    await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/delete-bank", { bankId: selectedBankId });
+    await axios.post("http://localhost:5050/api/delete-bank", { bankId: selectedBankId });
     setShowPopup(false);
     window.location.reload(); 
   } catch (error) {
@@ -45,7 +45,7 @@ const handleConfirmDelete = async () => {
   const fetchQuestionBanks = async () => {
     try {
       const response = await axios.post(
-        "https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/list-questionBanks",
+        "http://localhost:5050/api/list-questionBanks",
         { uid: userData._id }
       );
 
