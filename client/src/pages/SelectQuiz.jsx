@@ -16,7 +16,7 @@ const QuizSelectionPage = () => {
   const fetchQuizzes = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5050/api/list-quizzes",
+        "https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/list-quizzes",
         {
           createdBy: userData.name,
         }

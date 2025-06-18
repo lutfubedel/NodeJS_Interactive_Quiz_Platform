@@ -47,7 +47,7 @@ const QuestionFormModal = ({ onClose, onSave }) => {
 
     setIsUploading(true);
     try {
-      const res = await fetch("http://localhost:5050/api/upload", {
+      const res = await fetch("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/upload", {
         method: "POST",
         body: formData,
       });

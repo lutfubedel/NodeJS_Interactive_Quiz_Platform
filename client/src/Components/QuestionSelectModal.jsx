@@ -11,7 +11,7 @@ const QuestionSelectModal = ({ onClose, onSelectQuestions, userId }) => {
     const fetchBanks = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:5050/api/list-questionBanks",
+          "https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/list-questionBanks",
           { uid: userId }
         );
         setBanks(response.data.questionBanks);
@@ -25,7 +25,7 @@ const QuestionSelectModal = ({ onClose, onSelectQuestions, userId }) => {
   const fetchQuestions = async (bankId) => {
     try {
       const response = await axios.post(
-        "http://localhost:5050/api/get-questions",
+        "https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/get-questions",
         { bankId }
       );
       setQuestions(response.data.questions);

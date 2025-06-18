@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
           // MongoDB'den kullanıcı bilgilerini çek
-          const res = await axios.post("http://localhost:5050/api/find-user", {
+          const res = await axios.post("https://nodejsinteractivequizplatform-production.up.railway.app:5050/api/find-user", {
             uid: user.uid,
           });
 
